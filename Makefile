@@ -12,7 +12,7 @@ MMSOURCE18 = $(SMSDK_ROOT)/mmsource-1.8
 
 PROJECT = tickrate_enabler
 
-OBJECTS = tickrate_enabler.cpp
+OBJECTS = tickrate_enabler.cpp MemoryUtils/memutils.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

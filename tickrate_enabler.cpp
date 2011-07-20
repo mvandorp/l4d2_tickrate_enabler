@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include "MemoryUtils/memutils.h"
 #include "igameevents.h"
 #include "eiface.h"
 #include "tier0/icommandline.h"
@@ -96,6 +98,7 @@ float GetTickInterval()
 	RETURN_META_VALUE(MRES_SUPERCEDE, tickinterval );
 }
 
+bool PatchBoomerVomit(IServerGameDLL * gamedll);
 
 IServerGameDLL *gamedll = NULL;
 
@@ -119,6 +122,11 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 
 	SH_ADD_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
 
+	if(!PatchBoomerVomit(gamedll))
+	{
+		Warning("Tickrate_Enabler: Failed to patch boomer vomit behavior");
+		return false;
+	}
 	return true;
 }
 
@@ -253,3 +261,42 @@ void L4DTickRate::OnEdictFreed( const edict_t *edict  )
 void L4DTickRate::FireGameEvent( KeyValues * event )
 {
 }
+
+
+struct fakeGlobals {
+	float padding[4];
+	float frametime;
+};
+
+struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
+struct fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
+bool PatchBoomerVomit(IServerGameDLL * gamedll)
+{
+	void * p_CVomitUpdateAbility = NULL;
+
+#if defined _LINUX
+	const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
+	p_CVomitUpdateAbility = MemUtils::ResolveSymbol(gamedll, CVomitUpdateAbility_Symbol);
+
+#elif defined _WIN32
+	// Pattern to find CVomitUpdateAblity
+	const char CVomitUpdateAbility_pattern[] = "STUPID_PATTERN_FOR_THAT_FUNCTION";
+	p_CVomitUpdateAbility = MemUtils::FindPattern(gamedll, CVomitUpdateAbility_pattern, sizeof(CVomitUpdateAbility_pattern));
+#else
+	What platform is this?
+#endif
+	if(!p_CVomitUpdateAbility)
+	{
+		Warning("Unable to find CVomitUpdateAbility\n");
+		return false;
+	}
+
+
+	// mov eax, ebp+gpGlobalsOffset
+	const char movErxGpGlobals[] = "\x8B\x2A\xFC\xF4\xFF\xFF";
+	p_CVomitUpdateAbility = MemUtils::FindPattern(p_CVomitUpdateAbility, movErxGpGlobals, sizeof(movErxGpGlobals));
+	Msg("Found something at %p\n", p_CVomitUpdateAbility);
+
+	return true;
+}
+
