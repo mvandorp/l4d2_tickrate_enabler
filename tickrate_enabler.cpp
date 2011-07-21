@@ -276,9 +276,17 @@ struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 struct fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
 void PatchGlobalsRead(void * readaddr)
 {
-	char patch[]="\x8b\x00\x00\x00\x00\x90\x90\x90";
+	unsigned char patch[]="\x8b\x00\x00\x00\x00\x90\x90\x90";
 	*(void**)&patch[1] = gp_FakeGlobals;
-	
+	unsigned char * junk=(unsigned char*)readaddr;
+	Msg("gp_fakeglobals: %p\n", gp_FakeGlobals);
+	Msg("Patching %02x%02x%02x%02x%02x%02x%02x%02x to %02x%02x%02x%02x%02x%02x%02x%02x\n",
+		(uint32)junk[0], (uint32)junk[1], (uint32)junk[2], (uint32)junk[3], 
+		(uint32)junk[4], (uint32)junk[5], (uint32)junk[6], (uint32)junk[7],
+		(uint32)patch[0], (uint32)patch[1], (uint32)patch[2], (uint32)patch[3], 
+		(uint32)patch[4], (uint32)patch[5], (uint32)patch[6], (uint32)patch[7]);
+	g_MemUtils.SetMemPatchable(readaddr, 8);
+	memcpy(readaddr, patch, 8);
 }
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {

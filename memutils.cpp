@@ -30,6 +30,7 @@
 
 #include "memutils.h"
 #include <string.h>
+
 #ifdef PLATFORM_LINUX
 #include <fcntl.h>
 #include <link.h>
@@ -37,6 +38,8 @@
 
 #define PAGE_SIZE			4096
 #define PAGE_ALIGN_UP(x)	((x + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+#define ALIGN(ar) ((long)ar & ~(PAGE_SIZE-1))
+#define PAGE_EXECUTE_READWRITE  PROT_READ|PROT_WRITE|PROT_EXEC
 #endif
 
 #ifdef PLATFORM_APPLE
@@ -614,3 +617,24 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	return true;
 }
+
+void MemoryUtils::ProtectMemory(void *pAddr, int nLength, int nProt)
+{
+#if defined _LINUX
+    void *pAddr2 = (void *)ALIGN(pAddr);
+    mprotect(pAddr2, sysconf(_SC_PAGESIZE), nProt);
+#elif defined _WIN32
+    DWORD old_prot;
+    VirtualProtect(pAddr, nLength, nProt, &old_prot);
+#endif
+
+    return;
+}
+
+void MemoryUtils::SetMemPatchable(void *pAddr, size_t nSize)
+{
+    ProtectMemory(pAddr, (int)nSize, PAGE_EXECUTE_READWRITE);
+
+    return;
+}
+
