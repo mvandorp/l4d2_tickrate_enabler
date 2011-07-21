@@ -12,7 +12,7 @@ MMSOURCE18 = $(SMSDK_ROOT)/mmsource-1.8
 
 PROJECT = tickrate_enabler
 
-OBJECTS = tickrate_enabler.cpp MemoryUtils/memutils.cpp
+OBJECTS = tickrate_enabler.cpp memutils.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -31,7 +31,7 @@ SRCDS = $(SRCDS_BASE)/left4dead2
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so $(METAMOD)/Release.left4dead2/sourcehook/*.o
 
-INCLUDE += -I. -I$(HL2PUB) -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) 
+INCLUDE += -I. -I$(HL2PUB) -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook
 
 LINK += -m32 -ldl -lm
 
