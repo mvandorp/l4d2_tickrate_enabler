@@ -30,7 +30,6 @@
 
 #include "memutils.h"
 #include <string.h>
-
 #ifdef PLATFORM_LINUX
 #include <fcntl.h>
 #include <link.h>
@@ -101,10 +100,9 @@ MemoryUtils::~MemoryUtils()
 }
 
 
-void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t len)
+void *MemoryUtils::FindLibPattern(const void *libPtr, const char *pattern, size_t len)
 {
 	DynLibInfo lib;
-	bool found;
 	char *ptr, *end;
 
 	memset(&lib, 0, sizeof(DynLibInfo));
@@ -116,8 +114,14 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 
 	ptr = reinterpret_cast<char *>(lib.baseAddress);
 	end = ptr + lib.memorySize;
+	return FindPattern((void*)ptr, (void*)end, pattern, len);
+}
 
-	while (ptr < end)
+void *MemoryUtils::FindPattern(const void *start, const void *end, const char *pattern, size_t len)
+{
+	bool found;
+	char *ptr=(char*)start;
+	while (ptr < (char*)end)
 	{
 		found = true;
 		for (register size_t i = 0; i < len; i++)

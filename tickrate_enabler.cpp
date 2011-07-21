@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include "MemoryUtils/memutils.h"
+#include "memutils.h"
 #include "igameevents.h"
 #include "eiface.h"
 #include "tier0/icommandline.h"
@@ -122,6 +122,10 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 
 	SH_ADD_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
 
+	struct DynLibInfo dlinfo;
+	bool res = g_MemUtils.GetLibraryInfo(gamedll, dlinfo);
+	if(res) Msg("Found dlinfo\n");
+	else Msg("Not Found dlinfo\n");
 	if(!PatchBoomerVomit(gamedll))
 	{
 		Warning("Tickrate_Enabler: Failed to patch boomer vomit behavior");
@@ -270,18 +274,44 @@ struct fakeGlobals {
 
 struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 struct fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
+void PatchGlobalsRead(void * readaddr)
+{
+	char patch[]="\x8b\x00\x00\x00\x00\x90\x90\x90";
+	*(void**)&patch[1] = gp_FakeGlobals;
+	
+}
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
 	void * p_CVomitUpdateAbility = NULL;
 
 #if defined _LINUX
-	const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
-	p_CVomitUpdateAbility = MemUtils::ResolveSymbol(gamedll, CVomitUpdateAbility_Symbol);
+    const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
+	Dl_info info;
+    /* GNU only: returns 0 on error, inconsistent! >:[ */
+    if (dladdr(gamedll, &info) != 0)
+    {
+    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
+        if (handle)
+        {
+			p_CVomitUpdateAbility = g_MemUtils.ResolveSymbol(handle, CVomitUpdateAbility_Symbol);
+        	dlclose(handle);
+        } else {
+			Warning("Nohandle!\n");
+			return false;
+		}
+	}
+	else
+	{
+		Warning("No DLINFO!\n");
+		return false;
+	}
+
+
 
 #elif defined _WIN32
 	// Pattern to find CVomitUpdateAblity
 	const char CVomitUpdateAbility_pattern[] = "STUPID_PATTERN_FOR_THAT_FUNCTION";
-	p_CVomitUpdateAbility = MemUtils::FindPattern(gamedll, CVomitUpdateAbility_pattern, sizeof(CVomitUpdateAbility_pattern));
+	p_CVomitUpdateAbility = g_MemUtils.FindPattern(gamedll, CVomitUpdateAbility_pattern, sizeof(CVomitUpdateAbility_pattern));
 #else
 	What platform is this?
 #endif
@@ -290,12 +320,30 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 		Warning("Unable to find CVomitUpdateAbility\n");
 		return false;
 	}
+	Msg("CVomitUpdateAbility at %p\n", p_CVomitUpdateAbility);
 
+	void * end = (void *)(((char *)p_CVomitUpdateAbility) + 0x500);
+/*	Msg("Searching for end of CVomit::UpdateAbility()\n");
+	end = g_MemUtils.FindPattern(p_CVomitUpdateAbility, end, "\xe8\xf1\xe8\xec\xff\x90", 1);
+	Msg("Found the end at %p\n", end);*/
 
-	// mov eax, ebp+gpGlobalsOffset
-	const char movErxGpGlobals[] = "\x8B\x2A\xFC\xF4\xFF\xFF";
-	p_CVomitUpdateAbility = MemUtils::FindPattern(p_CVomitUpdateAbility, movErxGpGlobals, sizeof(movErxGpGlobals));
-	Msg("Found something at %p\n", p_CVomitUpdateAbility);
+	// mov e?x, ebp+gpGlobalsOffset
+	const char movGpGlobals[] = "\x8B\x2a\xfc\xf4\xff\xff\x8b";
+
+	Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
+	int patchcnt=0;
+	while((p_CVomitUpdateAbility = g_MemUtils.FindPattern(p_CVomitUpdateAbility, 
+			end, movGpGlobals, sizeof(movGpGlobals)-1)) != NULL)
+	{
+		++patchcnt;
+		Msg("Found something at %p\n", p_CVomitUpdateAbility);
+		unsigned char * test = (unsigned char *)p_CVomitUpdateAbility;
+		Msg("It's %02x %02x %p\n", (uint32)test[0], (uint32)test[1], *(void **)(test+2));
+		PatchGlobalsRead(p_CVomitUpdateAbility);
+		p_CVomitUpdateAbility=(void *)(((char*)p_CVomitUpdateAbility)+1);
+		Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
+	};
+	Msg("Found %d instances\n", patchcnt);
 
 	return true;
 }
