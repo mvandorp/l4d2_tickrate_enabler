@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include "memutils.h"
+#include "sm_platform.h"
 #include "igameevents.h"
 #include "eiface.h"
 #include "tier0/icommandline.h"
@@ -276,7 +277,11 @@ struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 struct fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
 void PatchGlobalsRead(void * readaddr)
 {
-	unsigned char patch[]="\x8b\x00\x00\x00\x00\x90\x90\x90";
+#if defined PLATFORM_LINUX
+	static unsigned char patch[]="\x8b\x00\x00\x00\x00\x90\x90\x90";
+#elif defined PLATFORM_WINDOWS
+	static unsigned char patch[]="\x00";
+#endif
 	*(void**)&patch[1] = gp_FakeGlobals;
 	unsigned char * junk=(unsigned char*)readaddr;
 	Msg("gp_fakeglobals: %p\n", gp_FakeGlobals);
@@ -292,7 +297,7 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
 	void * p_CVomitUpdateAbility = NULL;
 
-#if defined _LINUX
+#if defined PLATFORM_LINUX
     const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
 	Dl_info info;
     /* GNU only: returns 0 on error, inconsistent! >:[ */
@@ -314,9 +319,7 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 		return false;
 	}
 
-
-
-#elif defined _WIN32
+#elif defined PLATFORM_WINDOWS
 	// Pattern to find CVomitUpdateAblity
 	const char CVomitUpdateAbility_pattern[] = "STUPID_PATTERN_FOR_THAT_FUNCTION";
 	p_CVomitUpdateAbility = g_MemUtils.FindPattern(gamedll, CVomitUpdateAbility_pattern, sizeof(CVomitUpdateAbility_pattern));
@@ -331,25 +334,26 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 	Msg("CVomitUpdateAbility at %p\n", p_CVomitUpdateAbility);
 
 	void * end = (void *)(((char *)p_CVomitUpdateAbility) + 0x500);
-/*	Msg("Searching for end of CVomit::UpdateAbility()\n");
-	end = g_MemUtils.FindPattern(p_CVomitUpdateAbility, end, "\xe8\xf1\xe8\xec\xff\x90", 1);
-	Msg("Found the end at %p\n", end);*/
 
+#if defined PLATFORM_LINUX
 	// mov e?x, ebp+gpGlobalsOffset
-	const char movGpGlobals[] = "\x8B\x2a\xfc\xf4\xff\xff\x8b";
+	const char globReadPattern[] = "\x8B\x2a\xfc\xf4\xff\xff\x8b";
+#elif defined PLATFORM_WINDOWS
+	const char globReadPattern[] = "\x00";
+#endif
 
-	Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
+	Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(globReadPattern)-1);
 	int patchcnt=0;
 	while((p_CVomitUpdateAbility = g_MemUtils.FindPattern(p_CVomitUpdateAbility, 
-			end, movGpGlobals, sizeof(movGpGlobals)-1)) != NULL)
+			end, globReadPattern, sizeof(globReadPattern)-1)) != NULL)
 	{
 		++patchcnt;
 		Msg("Found something at %p\n", p_CVomitUpdateAbility);
 		unsigned char * test = (unsigned char *)p_CVomitUpdateAbility;
-		Msg("It's %02x %02x %p\n", (uint32)test[0], (uint32)test[1], *(void **)(test+2));
+//		Msg("It's %02x %02x %p\n", (uint32)test[0], (uint32)test[1], *(void **)(test+2));
 		PatchGlobalsRead(p_CVomitUpdateAbility);
 		p_CVomitUpdateAbility=(void *)(((char*)p_CVomitUpdateAbility)+1);
-		Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
+		Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(globReadPattern)-1);
 	};
 	Msg("Found %d instances\n", patchcnt);
 
