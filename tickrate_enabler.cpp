@@ -13,6 +13,10 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#ifdef DEFAULT_TICK_INTERVAL // hl2sdk-l4d2 is wrong, too lazy to patch
+#undef DEFAULT_TICK_INTERVAL
+#endif
+#define DEFAULT_TICK_INTERVAL 0.03333333
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
@@ -273,7 +277,7 @@ struct fakeGlobals {
 	float frametime;
 };
 
-struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
+struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, DEFAULT_TICK_INTERVAL};
 struct fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
 void PatchGlobalsRead(void * readaddr)
 {
