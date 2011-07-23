@@ -341,7 +341,7 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 
 #if defined PLATFORM_LINUX
 	// mov e?x, ebp+gpGlobalsOffset
-	const char globReadPattern[] = "\x8B\x2a\xfc\xf4\xff\xff\x8b";
+	const char globReadPattern[] = "\x8B\x8B\xfc\xf4\xff\xff\x8b";
 #elif defined PLATFORM_WINDOWS
 	const char globReadPattern[] = "\x00";
 #endif
