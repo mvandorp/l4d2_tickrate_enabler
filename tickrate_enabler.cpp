@@ -8,13 +8,11 @@
 #include "sourcehook/sourcehook_impl.h"
 #include "sourcehook/sourcehook_impl_chookidman.h"
 
+#include "boomervomitpatch.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//---------------------------------------------------------------------------------
-// Purpose: a sample 3rd party plugin class
-//---------------------------------------------------------------------------------
 class L4DTickRate: public IServerPluginCallbacks, public IGameEventListener
 {
 public:
@@ -97,8 +95,6 @@ float GetTickInterval()
 
 	RETURN_META_VALUE(MRES_SUPERCEDE, tickinterval );
 }
-
-bool PatchBoomerVomit(IServerGameDLL * gamedll);
 
 IServerGameDLL *gamedll = NULL;
 
@@ -265,94 +261,3 @@ void L4DTickRate::OnEdictFreed( const edict_t *edict  )
 void L4DTickRate::FireGameEvent( KeyValues * event )
 {
 }
-
-
-struct fakeGlobals {
-	float padding[4];
-	float frametime;
-};
-
-struct fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
-struct fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
-void PatchGlobalsRead(void * readaddr)
-{
-	unsigned char patch[]="\x8b\x00\x00\x00\x00\x90\x90\x90";
-	*(void**)&patch[1] = gp_FakeGlobals;
-	unsigned char * junk=(unsigned char*)readaddr;
-	Msg("gp_fakeglobals: %p\n", gp_FakeGlobals);
-	Msg("Patching %02x%02x%02x%02x%02x%02x%02x%02x to %02x%02x%02x%02x%02x%02x%02x%02x\n",
-		(uint32)junk[0], (uint32)junk[1], (uint32)junk[2], (uint32)junk[3], 
-		(uint32)junk[4], (uint32)junk[5], (uint32)junk[6], (uint32)junk[7],
-		(uint32)patch[0], (uint32)patch[1], (uint32)patch[2], (uint32)patch[3], 
-		(uint32)patch[4], (uint32)patch[5], (uint32)patch[6], (uint32)patch[7]);
-	g_MemUtils.SetMemPatchable(readaddr, 8);
-	memcpy(readaddr, patch, 8);
-}
-bool PatchBoomerVomit(IServerGameDLL * gamedll)
-{
-	void * p_CVomitUpdateAbility = NULL;
-
-#if defined _LINUX
-    const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
-	Dl_info info;
-    /* GNU only: returns 0 on error, inconsistent! >:[ */
-    if (dladdr(gamedll, &info) != 0)
-    {
-    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
-        if (handle)
-        {
-			p_CVomitUpdateAbility = g_MemUtils.ResolveSymbol(handle, CVomitUpdateAbility_Symbol);
-        	dlclose(handle);
-        } else {
-			Warning("Nohandle!\n");
-			return false;
-		}
-	}
-	else
-	{
-		Warning("No DLINFO!\n");
-		return false;
-	}
-
-
-
-#elif defined _WIN32
-	// Pattern to find CVomitUpdateAblity
-	const char CVomitUpdateAbility_pattern[] = "STUPID_PATTERN_FOR_THAT_FUNCTION";
-	p_CVomitUpdateAbility = g_MemUtils.FindPattern(gamedll, CVomitUpdateAbility_pattern, sizeof(CVomitUpdateAbility_pattern));
-#else
-	What platform is this?
-#endif
-	if(!p_CVomitUpdateAbility)
-	{
-		Warning("Unable to find CVomitUpdateAbility\n");
-		return false;
-	}
-	Msg("CVomitUpdateAbility at %p\n", p_CVomitUpdateAbility);
-
-	void * end = (void *)(((char *)p_CVomitUpdateAbility) + 0x500);
-/*	Msg("Searching for end of CVomit::UpdateAbility()\n");
-	end = g_MemUtils.FindPattern(p_CVomitUpdateAbility, end, "\xe8\xf1\xe8\xec\xff\x90", 1);
-	Msg("Found the end at %p\n", end);*/
-
-	// mov e?x, ebp+gpGlobalsOffset
-	const char movGpGlobals[] = "\x8B\x2a\xfc\xf4\xff\xff\x8b";
-
-	Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
-	int patchcnt=0;
-	while((p_CVomitUpdateAbility = g_MemUtils.FindPattern(p_CVomitUpdateAbility, 
-			end, movGpGlobals, sizeof(movGpGlobals)-1)) != NULL)
-	{
-		++patchcnt;
-		Msg("Found something at %p\n", p_CVomitUpdateAbility);
-		unsigned char * test = (unsigned char *)p_CVomitUpdateAbility;
-		Msg("It's %02x %02x %p\n", (uint32)test[0], (uint32)test[1], *(void **)(test+2));
-		PatchGlobalsRead(p_CVomitUpdateAbility);
-		p_CVomitUpdateAbility=(void *)(((char*)p_CVomitUpdateAbility)+1);
-		Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
-	};
-	Msg("Found %d instances\n", patchcnt);
-
-	return true;
-}
-
