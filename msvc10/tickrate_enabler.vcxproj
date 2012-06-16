@@ -83,7 +83,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..;$(HL2SDKL4D2)\game\shared;$(HL2SDKL4D2)\game\client;$(HL2SDKL4D2)\public;$(HL2SDKL4D2)\public\engine;$(HL2SDKL4D2)\public\tier0;$(HL2SDKL4D2)\public\tier1;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;COMPILER_MSVC;COMPILER_MSVC32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L4D2;WIN32;COMPILER_MSVC;COMPILER_MSVC32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -117,7 +117,7 @@
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..;$(HL2SDKL4D)\game\shared;$(HL2SDKL4D)\game\client;$(HL2SDKL4D)\public;$(HL2SDKL4D)\public\engine;$(HL2SDKL4D)\public\tier0;$(HL2SDKL4D)\public\tier1;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;COMPILER_MSVC;COMPILER_MSVC32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L4D1;WIN32;COMPILER_MSVC;COMPILER_MSVC32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -151,7 +151,7 @@
       <AdditionalOptions>/MP%(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..;$(HL2SDKL4D2)\game\shared;$(HL2SDKL4D2)\game\client;$(HL2SDKL4D2)\public;$(HL2SDKL4D2)\public\engine;$(HL2SDKL4D2)\public\tier0;$(HL2SDKL4D2)\public\tier1;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;COMPILER_MSVC;COMPILER_MSVC32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L4D2;WIN32;COMPILER_MSVC;COMPILER_MSVC32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -181,7 +181,7 @@
       <AdditionalOptions>/MP%(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..;$(HL2SDKL4D)\game\shared;$(HL2SDKL4D)\game\client;$(HL2SDKL4D)\public;$(HL2SDKL4D)\public\engine;$(HL2SDKL4D)\public\tier0;$(HL2SDKL4D)\public\tier1;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;COMPILER_MSVC;COMPILER_MSVC32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>L4D1;WIN32;COMPILER_MSVC;COMPILER_MSVC32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>

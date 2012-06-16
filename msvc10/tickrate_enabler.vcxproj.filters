@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\boomervomitpatch.cpp" />
+    <ClCompile Include="..\memutils.cpp" />
+    <ClCompile Include="..\tickrate_enabler.cpp" />
+    <ClCompile Include="..\sourcehook\sourcehook.cpp">
+      <Filter>sourcehook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sourcehook\sourcehook_hookmangen.cpp">
+      <Filter>sourcehook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sourcehook\sourcehook_impl_chookidman.cpp">
+      <Filter>sourcehook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sourcehook\sourcehook_impl_chookmaninfo.cpp">
+      <Filter>sourcehook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sourcehook\sourcehook_impl_cproto.cpp">
+      <Filter>sourcehook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sourcehook\sourcehook_impl_cvfnptr.cpp">
+      <Filter>sourcehook</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\boomervomitpatch.h" />
+    <ClInclude Include="..\memutils.h" />
+    <ClInclude Include="..\sourcehook\FastDelegate.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_list.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_memfuncinfo.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_memory.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_pagealloc.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_stack.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_string.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_tinyhash.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sh_vector.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_hookmangen.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_hookmangen_x86.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_chook.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_chookidman.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_chookmaninfo.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_ciface.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_cleanuptask.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_cproto.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_impl_cvfnptr.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sourcehook\sourcehook_pibuilder.h">
+      <Filter>sourcehook</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="sourcehook">
+      <UniqueIdentifier>{eb63d9c0-411a-47da-85d2-6221c72abf2d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
