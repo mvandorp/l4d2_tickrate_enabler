@@ -1,55 +1,16 @@
 #include <cstdlib>
 #include "memutils.h"
-#include "igameevents.h"
-#include "eiface.h"
 #include "tier0/icommandline.h"
 
 #include "sourcehook/sourcehook.h"
 #include "sourcehook/sourcehook_impl.h"
 #include "sourcehook/sourcehook_impl_chookidman.h"
 
+#include "tickrate_enabler.h"
 #include "boomervomitpatch.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
-class L4DTickRate: public IServerPluginCallbacks, public IGameEventListener
-{
-public:
-	L4DTickRate();
-	~L4DTickRate();
-
-	// IServerPluginCallbacks methods
-	virtual bool			Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory );
-	virtual void			Unload( void );
-	virtual void			Pause( void );
-	virtual void			UnPause( void );
-	virtual const char     *GetPluginDescription( void );      
-	virtual void			LevelInit( char const *pMapName );
-	virtual void			ServerActivate( edict_t *pEdictList, int edictCount, int clientMax );
-	virtual void			GameFrame( bool simulating );
-	virtual void			LevelShutdown( void );
-	virtual void			ClientActive( edict_t *pEntity );
-	virtual void			ClientDisconnect( edict_t *pEntity );
-	virtual void			ClientPutInServer( edict_t *pEntity, char const *playername );
-	virtual void			SetCommandClient( int index );
-	virtual void			ClientSettingsChanged( edict_t *pEdict );
-	virtual PLUGIN_RESULT	ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen );
-	virtual PLUGIN_RESULT	ClientCommand( edict_t *pEntity, const CCommand &args );
-	virtual PLUGIN_RESULT	NetworkIDValidated( const char *pszUserName, const char *pszNetworkID );
-	virtual void			OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue );
-
-	// added with version 3 of the interface.
-	virtual void			OnEdictAllocated( edict_t *edict );
-	virtual void			OnEdictFreed( const edict_t *edict  );	
-
-	// IGameEventListener Interface
-	virtual void FireGameEvent( KeyValues * event );
-
-	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
-private:
-	int m_iClientCommandIndex;
-};
 
 
 //
@@ -61,7 +22,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(L4DTickRate, IServerPluginCallbacks, INTERFACE
 //---------------------------------------------------------------------------------
 L4DTickRate::L4DTickRate()
 {
-	m_iClientCommandIndex = 0;
 }
 
 L4DTickRate::~L4DTickRate()
@@ -83,7 +43,7 @@ SH_DECL_HOOK0(IServerGameDLL, GetTickInterval, const, 0, float);
 
 float GetTickInterval()
 {
-	float tickinterval = DEFAULT_TICK_INTERVAL;
+	float tickinterval = (1.0f / 30.0f);
 
 	if ( CommandLine()->CheckParm( "-tickrate" ) )
 	{
@@ -118,15 +78,12 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 
 	SH_ADD_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
 
-	struct DynLibInfo dlinfo;
-	bool res = g_MemUtils.GetLibraryInfo(gamedll, dlinfo);
-	if(res) Msg("Found dlinfo\n");
-	else Msg("Not Found dlinfo\n");
 	if(!PatchBoomerVomit(gamedll))
 	{
 		Warning("Tickrate_Enabler: Failed to patch boomer vomit behavior");
 		return false;
 	}
+	Msg("Tickrate_Enabler loaded and patched in successfully!\n");
 	return true;
 }
 
@@ -157,7 +114,7 @@ void L4DTickRate::UnPause( void )
 //---------------------------------------------------------------------------------
 const char *L4DTickRate::GetPluginDescription( void )
 {
-	return "Tickrate_Enabler 0.2, ProdigySim";
+	return "Tickrate_Enabler 0.3, ProdigySim";
 }
 
 //---------------------------------------------------------------------------------
@@ -208,7 +165,6 @@ void L4DTickRate::ClientPutInServer( edict_t *pEntity, char const *playername )
 //---------------------------------------------------------------------------------
 void L4DTickRate::SetCommandClient( int index )
 {
-	m_iClientCommandIndex = index;
 }
 
 //---------------------------------------------------------------------------------
@@ -252,12 +208,5 @@ void L4DTickRate::OnEdictAllocated( edict_t *edict )
 {
 }
 void L4DTickRate::OnEdictFreed( const edict_t *edict  )
-{
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called when an event is fired
-//---------------------------------------------------------------------------------
-void L4DTickRate::FireGameEvent( KeyValues * event )
 {
 }
