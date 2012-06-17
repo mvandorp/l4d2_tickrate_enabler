@@ -11,6 +11,8 @@ struct fakeGlobals {
 
 fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
+
+#if defined (_LINUX)
 fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
 
 void * SimpleResolve(void * pBaseAddr, const char * symbol)
@@ -44,8 +46,10 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 	}
 }
 
+
+#if defined (L4D2)
+
 /* Linux L4D2 */
-#if defined (_LINUX) && defined (L4D2)
 
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
@@ -108,9 +112,23 @@ D9 40 10             fld     dword ptr [eax+10h] */
 	return true;
 }
 
-/* Windows L4D2 */
+#elif defined (L4D1)
 
-#elif defined (_WIN32) && defined (L4D2)
+/* Linux L4D1 */
+
+bool PatchBoomerVomit(IServerGameDLL * gamedll)
+{
+	Warning("Boomer Vomit Patch not yet implemented on this platform!\n");
+	return false;
+}
+
+#endif
+
+#elif defined (_WIN32)
+
+#if defined (L4D2)
+
+/* Windows L4D2 */
 
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
@@ -214,26 +232,16 @@ cleanup1:
 	return false;
 }
 
-
-/* Linux L4D1 */
-
-#elif defined (_LINUX) && defined (L4D1)
-
-bool PatchBoomerVomit(IServerGameDLL * gamedll)
-{
-	Warning("Boomer Vomit Patch not yet implemented on this platform!\n");
-	return false;
-}
+#elif defined (L4D1)
 
 /* Windows L4D1 */
 
-#elif defined (_WIN32) && defined (L4D1)
-
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
 	Warning("Boomer Vomit Patch not yet implemented on this platform!\n");
 	return false;
 }
 
-#endif
+#endif // L4D1 (_WIN32)
+#endif // _WIN32
 
