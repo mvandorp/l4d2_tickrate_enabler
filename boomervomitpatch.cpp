@@ -158,9 +158,9 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 	const char CVomitUpdateAbility_pattern[] = "\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x8B\xF9\x8B\x87";
 
 #if defined (L4D1)
-	const int firstFrameTimeReadOffset = 0x173; // mov edx, gpGlobals; 8B 15 <ADDR>
-	const int secondFrameTimeReadOffset = 0x2CD; // mov eax, gpGlobals; A1 <ADDR>
-	const int thirdFrameTimeReadOffset = 0x476; // mov eax, gpGlobals; A1 <ADDR>
+	const int firstFrameTimeReadOffset = 0x173;
+	const int secondFrameTimeReadOffset = 0x2CD;
+	const int thirdFrameTimeReadOffset = 0x476; 
 #elif defined (L4D2)
 	const int firstFrameTimeReadOffset = 0x168; // mov edx, gpGlobals; 8B 15 <ADDR>
 	const int secondFrameTimeReadOffset = 0x2C2; // mov eax, gpGlobals; A1 <ADDR>
