@@ -47,16 +47,21 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 }
 
 
-#if defined (L4D2)
-
-/* Linux L4D2 */
+/* Linux L4D1+2 */
 
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
     const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
-    const int firstFrameTimeReadOffset = 0x158; // mov edx, gpGlobals; 8B 15 <ADDR>
+
+#if defined (L4D1)
+    const int firstFrameTimeReadOffset = 0x153; // mov edx, [ebx+offs gpGlobals]; 8B 93
+    const int secondFrameTimeReadOffset = 0x303; // mov ecx, [eba+offs gpGlobals]; 8B 8B
+#elif defined (L4D2)
+    const int firstFrameTimeReadOffset = 0x158;
+    const int secondFrameTimeReadOffset = 0x308; 
+#endif
 	// todo: search, not offsets... maybe
-	const int secondFrameTimeReadOffset = 0x308; // mov eax, gpGlobals; A1 <ADDR>
+	
 	
     BYTE * p_CVomitUpdateAbility = (BYTE *)SimpleResolve(gamedll, CVomitUpdateAbility_Symbol);
 	if(!p_CVomitUpdateAbility)
@@ -111,18 +116,6 @@ D9 40 10             fld     dword ptr [eax+10h] */
 
 	return true;
 }
-
-#elif defined (L4D1)
-
-/* Linux L4D1 */
-
-bool PatchBoomerVomit(IServerGameDLL * gamedll)
-{
-	Warning("Boomer Vomit Patch not yet implemented on this platform!\n");
-	return false;
-}
-
-#endif
 
 #elif defined (_WIN32)
 

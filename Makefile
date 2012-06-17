@@ -113,7 +113,10 @@ debug:
 
 default: all
 
+#clean:
+#	find $(BIN_DIR) -iname *.o | xargs rm -f
+#	rm -rf $(BIN_DIR)/$(BINARY)
+#	rm ./*.so
 clean:
-	find $(BIN_DIR) -iname *.o | xargs rm -f
-	rm -rf $(BIN_DIR)/$(BINARY)
-	rm ./*.so
+	rm -rf Release.left4dead Release.left4dead2 Debug.left4dead Debug.left4dead2
+
