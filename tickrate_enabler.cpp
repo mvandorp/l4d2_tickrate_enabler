@@ -80,7 +80,7 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 
 	if(!PatchBoomerVomit(gamedll))
 	{
-		Warning("Tickrate_Enabler: Failed to patch boomer vomit behavior");
+		Warning("Tickrate_Enabler: Failed to patch boomer vomit behavior.\n");
 		return false;
 	}
 	Msg("Tickrate_Enabler loaded and patched in successfully!\n");
