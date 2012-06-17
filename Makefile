@@ -13,9 +13,10 @@ L4D ?= 2
 
 PROJECT = tickrate_enabler
 
-SH_OBJECTS = sourcehook.cpp sourcehook_impl_chookidman.cpp
+SH_OBJECTS = sourcehook.cpp sourcehook_impl_chookidman.cpp sourcehook_impl_cproto.cpp sourcehook_hookmangen.cpp \
+	sourcehook_impl_chookmaninfo.cpp sourcehook_impl_cvfnptr.cpp
 
-OBJECTS = tickrate_enabler.cpp memutils.cpp $(addprefix sourcehook/,$(SH_OBJECTS))
+OBJECTS = boomervomitpatch.cpp tickrate_enabler.cpp memutils.cpp $(addprefix sourcehook/,$(SH_OBJECTS))
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -29,18 +30,14 @@ CPP = gcc
 
 ifeq "$(L4D)" "1"
 	HL2PUB = $(HL2SDK_L4D)/public
+	HL2LIB = $(HL2SDK_L4D)/lib/linux
+	SRCDS = $(SRCDS_BASE)/l4d
+	CFLAGS += -DL4D1
 else
 	HL2PUB = $(HL2SDK_L4D2)/public
-endif
-ifeq "$(L4D)" "1"
-	HL2LIB = $(HL2SDK_L4D)/lib/linux
-else
 	HL2LIB = $(HL2SDK_L4D2)/lib/linux
-endif
-ifeq "$(L4D)" "1"
-	SRCDS = $(SRCDS_BASE)/l4d
-else
 	SRCDS = $(SRCDS_BASE)/left4dead2
+	CFLAGS += -DL4D2
 endif
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so

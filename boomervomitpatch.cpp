@@ -11,32 +11,50 @@ struct fakeGlobals {
 
 fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
+fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
 
-
-#if defined _LINUX
-bool PatchBoomerVomit(IServerGameDLL * gamedll)
+void * SimpleResolve(void * pBaseAddr, const char * symbol)
 {
-	void * p_CVomitUpdateAbility = NULL;
-    const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
+	struct DynLibInfo dlinfo;
+	if(!g_MemUtils.GetLibraryInfo(pBaseAddr, dlinfo))
+	{
+		Warning("Not Found dlinfo\n");
+		return NULL;
+	}
+	
+
 	Dl_info info;
-    /* GNU only: returns 0 on error, inconsistent! >:[ */
-    if (dladdr(gamedll, &info) != 0)
+	if (dladdr(pBaseAddr, &info) != 0)
     {
     	void *handle = dlopen(info.dli_fname, RTLD_NOW);
         if (handle)
         {
-			p_CVomitUpdateAbility = g_MemUtils.ResolveSymbol(handle, CVomitUpdateAbility_Symbol);
+			void * pLocation = g_MemUtils.ResolveSymbol(handle, symbol);
         	dlclose(handle);
+        	return pLocation;
         } else {
 			Warning("Nohandle!\n");
-			return false;
+			return NULL;
 		}
 	}
 	else
 	{
 		Warning("No DLINFO!\n");
-		return false;
+		return NULL;
 	}
+}
+
+/* Linux L4D2 */
+#if defined (_LINUX) && defined (L4D2)
+
+bool PatchBoomerVomit(IServerGameDLL * gamedll)
+{
+    const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
+    const int firstFrameTimeReadOffset = 0x158; // mov edx, gpGlobals; 8B 15 <ADDR>
+	// todo: search, not offsets... maybe
+	const int secondFrameTimeReadOffset = 0x308; // mov eax, gpGlobals; A1 <ADDR>
+	
+    BYTE * p_CVomitUpdateAbility = (BYTE *)SimpleResolve(gamedll, CVomitUpdateAbility_Symbol);
 	if(!p_CVomitUpdateAbility)
 	{
 		Warning("Unable to find CVomitUpdateAbility\n");
@@ -44,33 +62,55 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 	}
 	Msg("CVomitUpdateAbility at %p\n", p_CVomitUpdateAbility);
 
-	void * end = (void *)(((char *)p_CVomitUpdateAbility) + 0x500);
-/*	Msg("Searching for end of CVomit::UpdateAbility()\n");
-	end = g_MemUtils.FindPattern(p_CVomitUpdateAbility, end, "\xe8\xf1\xe8\xec\xff\x90", 1);
-	Msg("Found the end at %p\n", end);*/
+/* CVomit::UpdateAbility()+0x158
 
-	// mov e?x, ebp+gpGlobalsOffset
-	const char movGpGlobals[] = "\x8B\x2a\xfc\xf4\xff\xff\x8b";
-
-	Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
-	int patchcnt=0;
-	while((p_CVomitUpdateAbility = g_MemUtils.FindPattern(p_CVomitUpdateAbility, 
-			end, movGpGlobals, sizeof(movGpGlobals)-1)) != NULL)
+8B 93 00 F5 FF FF    mov     edx, ds:(gpGlobals_ptr - 0DCF5B0h)[ebx]
+8B 02                mov     eax, [edx]
+D9 40 10             fld     dword ptr [eax+10h] */
+	
+	BYTE * pTarget1 = p_CVomitUpdateAbility + firstFrameTimeReadOffset;
+	if(pTarget1[0] != 0x8B)
 	{
-		++patchcnt;
-		Msg("Found something at %p\n", p_CVomitUpdateAbility);
-		unsigned char * test = (unsigned char *)p_CVomitUpdateAbility;
-		Msg("It's %02x %02x %p\n", (uint32)test[0], (uint32)test[1], *(void **)(test+2));
-		PatchGlobalsRead(p_CVomitUpdateAbility);
-		p_CVomitUpdateAbility=(void *)(((char*)p_CVomitUpdateAbility)+1);
-		Msg("Searching for from %p to %p for %d bytes\n", p_CVomitUpdateAbility, end, sizeof(movGpGlobals)-1);
-	};
-	Msg("Found %d instances\n", patchcnt);
+		// not mov we expect
+		Warning("Bad Target 1: Not mov instruction (0x%02x).\n", pTarget1[0]);
+		return false;
+	}
+
+	g_MemUtils.SetMemPatchable(pTarget1, 6);
+	pTarget1[1] &= 0x38; // destroy first 2 and last 3 bits of MODR/M
+	pTarget1[1] |= 0x05; // Convert source to mem32 immediate
+	// Patch this read to read our fake gpGlobals
+	*(fakeGlobals ****)(pTarget1 + 2) = &gpp_FakeGlobals;
+
+
+
+/* CVomit::UpdateAbility()+0x308
+
+8B 8B 00 F5 FF FF    mov     ecx, ds:(gpGlobals_ptr - 0DCF5B0h)[ebx]
+8B 01                mov     eax, [ecx]
+D9 40 10             fld     dword ptr [eax+10h] */
+
+	BYTE * pTarget2 = p_CVomitUpdateAbility + secondFrameTimeReadOffset;
+	if(pTarget2[0] != 0x8B)
+	{
+		// not mov we expect
+		Warning("Bad Target 2: Not mov instruction (0x%02x).\n", pTarget2[0]);
+		return false;
+	}
+
+	g_MemUtils.SetMemPatchable(pTarget2, 6);
+	pTarget2[1] &= 0x38; // destroy first 2 and last 3 bits of MODR/M
+	pTarget2[1] |= 0x05; // Convert source to mem32 immediate
+	// Patch this read to read our fake gpGlobals
+	*(fakeGlobals ****)(pTarget2 + 2) = &gpp_FakeGlobals;
+
 
 	return true;
+}
 
+/* Windows L4D2 */
 
-#elif defined _WIN32
+#elif defined (_WIN32) && defined (L4D2)
 
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
@@ -173,5 +213,27 @@ cleanup1:
 	*(const CGlobalVarsBase ***)(pTarget1 + 2) = p_gpGlobals_Addr;
 	return false;
 }
+
+
+/* Linux L4D1 */
+
+#elif defined (_LINUX) && defined (L4D1)
+
+bool PatchBoomerVomit(IServerGameDLL * gamedll)
+{
+	Warning("Boomer Vomit Patch not yet implemented on this platform!\n");
+	return false;
+}
+
+/* Windows L4D1 */
+
+#elif defined (_WIN32) && defined (L4D1)
+
+bool PatchBoomerVomit(IServerGameDLL * gamedll)
+{
+	Warning("Boomer Vomit Patch not yet implemented on this platform!\n");
+	return false;
+}
+
 #endif
 
