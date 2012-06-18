@@ -114,7 +114,7 @@ void L4DTickRate::UnPause( void )
 //---------------------------------------------------------------------------------
 const char *L4DTickRate::GetPluginDescription( void )
 {
-	return "Tickrate_Enabler 0.3, ProdigySim";
+	return "Tickrate_Enabler 0.4, ProdigySim";
 }
 
 //---------------------------------------------------------------------------------
