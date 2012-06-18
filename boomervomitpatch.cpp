@@ -111,8 +111,8 @@ D9 40 10             fld     dword ptr [eax+10h] */
 	}
 
 	g_MemUtils.SetMemPatchable(pTarget1, 6);
-	pTarget1[1] &= 0x38; // destroy first 2 and last 3 bits of MODR/M
-	pTarget1[1] |= 0x05; // Convert source to mem32 immediate
+	mov_to_disp32(pTarget1);
+
 	// Patch this read to read our fake gpGlobals
 	*(fakeGlobals ****)(pTarget1 + 2) = &gpp_FakeGlobals;
 
@@ -133,8 +133,8 @@ D9 40 10             fld     dword ptr [eax+10h] */
 	}
 
 	g_MemUtils.SetMemPatchable(pTarget2, 6);
-	pTarget2[1] &= 0x38; // destroy first 2 and last 3 bits of MODR/M
-	pTarget2[1] |= 0x05; // Convert source to mem32 immediate
+	mov_to_disp32(pTarget2);
+
 	// Patch this read to read our fake gpGlobals
 	*(fakeGlobals ****)(pTarget2 + 2) = &gpp_FakeGlobals;
 
