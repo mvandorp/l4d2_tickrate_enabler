@@ -16,7 +16,9 @@ PROJECT = tickrate_enabler
 SH_OBJECTS = sourcehook.cpp sourcehook_impl_chookidman.cpp sourcehook_impl_cproto.cpp sourcehook_hookmangen.cpp \
 	sourcehook_impl_chookmaninfo.cpp sourcehook_impl_cvfnptr.cpp
 
-OBJECTS = boomervomitpatch.cpp tickrate_enabler.cpp memutils.cpp $(addprefix sourcehook/,$(SH_OBJECTS))
+CP_OBJECTS = patchmanager.cpp
+
+OBJECTS = boomervomitpatch.cpp tickrate_enabler.cpp memutils.cpp $(addprefix codepatch/,$(CP_OBJECTS)) $(addprefix sourcehook/,$(SH_OBJECTS))
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -42,7 +44,7 @@ endif
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so
 
-INCLUDE += -I. -I$(HL2PUB) -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -Isourcehook
+INCLUDE += -I. -I$(HL2PUB) -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1
 
 LINK += -m32 -ldl -lm
 

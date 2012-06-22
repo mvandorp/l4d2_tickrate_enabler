@@ -1,8 +1,10 @@
 #include <cstdlib>
 #include "memutils.h"
-#include "igameevents.h"
-#include "eiface.h"
-#include "tier0/icommandline.h"
+#include "boomervomitpatch.h"
+#include "patchexceptions.h"
+
+
+
 
 #define MODRM_SRC_TO_DISP32(modrm) (( modrm & 0x38) | 0x05 )
 
@@ -44,6 +46,108 @@ struct fakeGlobals {
 
 fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
+#ifdef _LINUX
+fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
+
+void * SimpleResolve(void * pBaseAddr, const char * symbol)
+{
+	Dl_info info;
+	if (dladdr(pBaseAddr, &info) != 0)
+    {
+    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
+        if (handle)
+        {
+			void * pLocation = g_MemUtils.ResolveSymbol(handle, symbol);
+        	dlclose(handle);
+        	return pLocation;
+        } else {
+			Warning("Nohandle!\n");
+			return NULL;
+		}
+	}
+	else
+	{
+		Warning("No DLINFO!\n");
+		return NULL;
+	}
+}
+#endif
+
+BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
+{
+	// Mark that nothing is patched yet
+	for(int i = 0; i < NUM_FRAMETIME_READS; i++) m_bIsReadPatched[i] = false;
+
+	// Find CVomit::UpdateAbility() in memory
+	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
+	
+	// Let's die now if we can't find it
+	if(!m_fpCVomitUpdateAbility)
+	{
+		throw PatchException("Couldn't find CVomit::UpdateAbility() in server memory.");
+	}
+
+	// Thanks friend for great message
+	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
+
+}
+
+void BoomerVomitFrameTimePatch::Patch()
+{
+	for(int i = 0; i < NUM_FRAMETIME_READS; i++)
+	{
+		if(!m_bIsReadPatched[i]) // If we've already patched this one, skip.
+		{
+			DevMsg("Patching Frametime read %d (offs:0x%x).\n", i, g_FrameTimeReadOffsets[i]);
+
+			// Calculate first offset target
+			BYTE * pTarget = m_fpCVomitUpdateAbility + g_FrameTimeReadOffsets[i];
+
+			int offs = mov_src_operand_offset(pTarget); // Find offset of disp32 in this particular mov instruction
+			if(offs == 0)
+			{
+				// Throw an exception if we can't identify this offset (unexpected instruction!)
+				// TODO: More useful exception here.
+				throw PatchException("CVomit::UpdateAbility() Patch Offset incorrect.");
+			}
+
+			g_MemUtils.SetMemPatchable(pTarget, 4+offs);
+	
+			// make this instruction read from an immediate address
+			mov_to_disp32(pTarget);
+
+			// Plug in our super cool immediate address.
+#if defined (_WIN32)
+			*(fakeGlobals ***)(pTarget + offs) = &gp_FakeGlobals;
+#elif defined (_LINUX)
+			*(fakeGlobals ****)(pTarget + offs) = &gpp_FakeGlobals;
+#endif
+			// Mark this one as patched
+			m_bIsReadPatched[i] = true;
+		}
+	}
+}
+
+void BoomerVomitFrameTimePatch::Unpatch() 
+{
+	DevMsg("Totally unpatching!!!!\n");
+	for(int i = 0; i < NUM_FRAMETIME_READS; i++)
+	{
+		if(m_bIsReadPatched[i])
+		{
+			// TODO: unpatch here
+		}
+	}
+}
+
+BYTE * BoomerVomitFrameTimePatch::FindCVomitUpdateAbility(void * gamedll)
+{
+#if defined (_LINUX)
+	return (BYTE *)SimpleResolve(gamedll, CVomitUpdateAbility_Symbol);
+#elif defined (_WIN32)
+	return (BYTE*)g_MemUtils.FindLibPattern(gamedll, WIN_CVomit_UpdateAbility_SIG, WIN_CVomit_UpdateAbility_SIGLEN);
+#endif
+}
 
 #if defined (_LINUX)
 fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
@@ -76,26 +180,6 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 
 bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
-    const char CVomitUpdateAbility_Symbol[] = "_ZN6CVomit13UpdateAbilityEv";
-
-#if defined (L4D1)
-    const int firstFrameTimeReadOffset = 0x153; // mov edx, [ebx+offs gpGlobals]; 8B 93
-    const int secondFrameTimeReadOffset = 0x303; // mov ecx, [eba+offs gpGlobals]; 8B 8B
-#elif defined (L4D2)
-    const int firstFrameTimeReadOffset = 0x158;
-    const int secondFrameTimeReadOffset = 0x308; 
-#endif
-	// todo: search, not offsets... maybe
-	
-	
-    BYTE * p_CVomitUpdateAbility = (BYTE *)SimpleResolve(gamedll, CVomitUpdateAbility_Symbol);
-	if(!p_CVomitUpdateAbility)
-	{
-		Warning("Unable to find CVomitUpdateAbility\n");
-		return false;
-	}
-	Msg("CVomitUpdateAbility at %p\n", p_CVomitUpdateAbility);
-
 /* CVomit::UpdateAbility()+0x158
 
 8B 93 00 F5 FF FF    mov     edx, ds:(gpGlobals_ptr - 0DCF5B0h)[ebx]
@@ -150,12 +234,6 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 {
 	BYTE * p_CVomitUpdateAbility = NULL;
 	const CGlobalVarsBase ** p_gpGlobals_Addr = NULL;
-	
-	
-	// Pattern to find CVomit::UpdateAblity()
-	// search for "stopvomit" string in CVomit::StopVomitEffect() + ~0x1A0, xref StopVomitEffect + ~0xE0 (farther than other similar)
-	// 81 EC ? ? ? ? 53 55 56 57 8B F9 8B 87
-	const char CVomitUpdateAbility_pattern[] = "\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x8B\xF9\x8B\x87";
 
 #if defined (L4D1)
 	const int firstFrameTimeReadOffset = 0x173;
@@ -166,14 +244,6 @@ bool PatchBoomerVomit(IServerGameDLL * gamedll)
 	const int secondFrameTimeReadOffset = 0x2C2; // mov eax, gpGlobals; A1 <ADDR>
 	const int thirdFrameTimeReadOffset = 0x45C; // mov eax, gpGlobals; A1 <ADDR>
 #endif
-	
-	p_CVomitUpdateAbility = (BYTE*)g_MemUtils.FindLibPattern(gamedll, CVomitUpdateAbility_pattern, sizeof(CVomitUpdateAbility_pattern)-1);
-	if(!p_CVomitUpdateAbility)
-	{
-		Warning("Unable to find CVomitUpdateAbility\n");
-		return false;
-	}
-	Msg("CVomitUpdateAbility at %08x\n", p_CVomitUpdateAbility);
 
 	/* First gpGlobals read */
 

@@ -22,6 +22,9 @@
     <ClCompile Include="..\sourcehook\sourcehook_impl_cvfnptr.cpp">
       <Filter>sourcehook</Filter>
     </ClCompile>
+    <ClCompile Include="..\codepatch\patchmanager.cpp">
+      <Filter>codepatch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\boomervomitpatch.h" />
@@ -89,10 +92,23 @@
     <ClInclude Include="..\sourcehook\sourcehook_pibuilder.h">
       <Filter>sourcehook</Filter>
     </ClInclude>
+    <ClInclude Include="..\codepatch\autopatch.h">
+      <Filter>codepatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\codepatch\icodepatch.h">
+      <Filter>codepatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\codepatch\patchmanager.h">
+      <Filter>codepatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\patchexceptions.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sourcehook">
       <UniqueIdentifier>{eb63d9c0-411a-47da-85d2-6221c72abf2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="codepatch">
+      <UniqueIdentifier>{98e2ec5b-3c93-4f0e-bfe5-05e82b1a3a27}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

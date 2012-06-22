@@ -6,8 +6,11 @@
 #include "sourcehook/sourcehook_impl.h"
 #include "sourcehook/sourcehook_impl_chookidman.h"
 
+#include "codepatch/autopatch.h"
+
 #include "tickrate_enabler.h"
 #include "boomervomitpatch.h"
+#include "patchexceptions.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -78,12 +81,18 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 
 	SH_ADD_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
 
-	if(!PatchBoomerVomit(gamedll))
+	try
 	{
-		Warning("Tickrate_Enabler: Failed to patch boomer vomit behavior.\n");
+		m_patchManager.Register(new BoomerVomitFrameTimePatch(gamedll));
+		
+		m_patchManager.PatchAll();
+	}
+	catch( PatchException & e)
+	{
+		Error("!!!!!\nPatch Failure: %s\n!!!!!\n", e.GetDescription());
+		Error("Failed to process all tickrate_enabler patches, bailing out.\n");
 		return false;
 	}
-	Msg("Tickrate_Enabler loaded and patched in successfully!\n");
 	return true;
 }
 
@@ -92,6 +101,8 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 //---------------------------------------------------------------------------------
 void L4DTickRate::Unload( void )
 {
+	m_patchManager.UnpatchAll();
+	m_patchManager.UnregisterAll();
 	SH_REMOVE_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
 }
 

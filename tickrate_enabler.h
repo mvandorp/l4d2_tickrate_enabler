@@ -1,7 +1,7 @@
 #ifndef __TICKRATE_ENABLER_H__
 #define __TICKRATE_ENABLER_H__
 #include "eiface.h"
-
+#include "codepatch\patchmanager.h"
 
 class L4DTickRate: public IServerPluginCallbacks
 {
@@ -32,6 +32,8 @@ public:
 	// added with version 3 of the interface.
 	virtual void			OnEdictAllocated( edict_t *edict );
 	virtual void			OnEdictFreed( const edict_t *edict  );
+private:
+	PatchManager m_patchManager;
 };
 
 #endif // __TICKRATE_ENABLER_H__
