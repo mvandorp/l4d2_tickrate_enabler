@@ -6,7 +6,7 @@
 #include "sourcehook/sourcehook_impl.h"
 #include "sourcehook/sourcehook_impl_chookidman.h"
 
-#include "codepatch/autopatch.h"
+#include "codepatch/patchmanager.h"
 
 #include "tickrate_enabler.h"
 #include "boomervomitpatch.h"

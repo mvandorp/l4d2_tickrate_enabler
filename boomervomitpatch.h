@@ -2,7 +2,7 @@
 #define __BOOMERVOMITPATCH_H__
 
 #include "eiface.h"
-#include "codepatch\icodepatch.h"
+#include "codepatch/icodepatch.h"
 
 /* Platform specific offset+sig data */
 

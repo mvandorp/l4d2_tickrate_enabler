@@ -36,7 +36,7 @@
 #include <stdint.h>
 //#include "common_logic.h"
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
-#include <sh_vector.h>
+#include <sourcehook/sh_vector.h>
 #include "sm_symtable.h"
 using SourceHook::CVector;
 #endif

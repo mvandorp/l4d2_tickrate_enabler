@@ -1,7 +1,7 @@
 #ifndef __TICKRATE_ENABLER_H__
 #define __TICKRATE_ENABLER_H__
 #include "eiface.h"
-#include "codepatch\patchmanager.h"
+#include "codepatch/patchmanager.h"
 
 class L4DTickRate: public IServerPluginCallbacks
 {

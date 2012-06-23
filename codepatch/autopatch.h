@@ -33,6 +33,8 @@
 #ifndef _INCLUDE_SOURCEMOD_AUTOPATCH_H_
 #define _INCLUDE_SOURCEMOD_AUTOPATCH_H_
 
+#include "icodepatch.h"
+
 /*
 use this class to automatically construct a codepatch and then have it call patch
 */
@@ -48,7 +50,7 @@ public:
 
 	~AutoPatch()
 	{
-		L4D_DEBUG_LOG("AutoPatch destructor");
+		//L4D_DEBUG_LOG("AutoPatch destructor");
 	}
 
 	/* 

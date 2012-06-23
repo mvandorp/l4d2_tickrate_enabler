@@ -76,7 +76,7 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
 {
 	// Mark that nothing is patched yet
-	for(int i = 0; i < NUM_FRAMETIME_READS; i++) m_bIsReadPatched[i] = false;
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_bIsReadPatched[i] = false;
 
 	// Find CVomit::UpdateAbility() in memory
 	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
@@ -94,7 +94,7 @@ BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
 
 void BoomerVomitFrameTimePatch::Patch()
 {
-	for(int i = 0; i < NUM_FRAMETIME_READS; i++)
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
 	{
 		if(!m_bIsReadPatched[i]) // If we've already patched this one, skip.
 		{
@@ -131,7 +131,7 @@ void BoomerVomitFrameTimePatch::Patch()
 void BoomerVomitFrameTimePatch::Unpatch() 
 {
 	DevMsg("Totally unpatching!!!!\n");
-	for(int i = 0; i < NUM_FRAMETIME_READS; i++)
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
 	{
 		if(m_bIsReadPatched[i])
 		{
@@ -143,38 +143,14 @@ void BoomerVomitFrameTimePatch::Unpatch()
 BYTE * BoomerVomitFrameTimePatch::FindCVomitUpdateAbility(void * gamedll)
 {
 #if defined (_LINUX)
-	return (BYTE *)SimpleResolve(gamedll, CVomitUpdateAbility_Symbol);
+	return (BYTE *)SimpleResolve(gamedll, LIN_CVomit_UpdateAbility_SYMBOL);
 #elif defined (_WIN32)
 	return (BYTE*)g_MemUtils.FindLibPattern(gamedll, WIN_CVomit_UpdateAbility_SIG, WIN_CVomit_UpdateAbility_SIGLEN);
 #endif
 }
 
+#ifdef __USE_OLD_DEPRECATED_PATCH__
 #if defined (_LINUX)
-fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
-
-void * SimpleResolve(void * pBaseAddr, const char * symbol)
-{
-	Dl_info info;
-	if (dladdr(pBaseAddr, &info) != 0)
-    {
-    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
-        if (handle)
-        {
-			void * pLocation = g_MemUtils.ResolveSymbol(handle, symbol);
-        	dlclose(handle);
-        	return pLocation;
-        } else {
-			Warning("Nohandle!\n");
-			return NULL;
-		}
-	}
-	else
-	{
-		Warning("No DLINFO!\n");
-		return NULL;
-	}
-}
-
 
 /* Linux L4D1+2 */
 
@@ -340,4 +316,4 @@ cleanup1:
 }
 
 #endif // _WIN32
-
+#endif // __USE_OLD_DEPRECATED_PATCH__

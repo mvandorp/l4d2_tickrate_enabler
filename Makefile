@@ -52,7 +52,7 @@ CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strnca
         -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
         -Wno-error=uninitialized -Wno-unused -Wno-error=delete-non-virtual-dtor -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
 
-CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti -fno-threadsafe-statics
+CPPFLAGS += -Wno-non-virtual-dtor -fno-rtti -fno-threadsafe-statics
 
 ################################################
 ### DO NOT EDIT BELOW HERE FOR MOST PROJECTS ###
@@ -97,7 +97,7 @@ $(BIN_DIR)/%.o: %.cpp
 all:
 	cp $(SRCDS)/bin/libvstdlib.so libvstdlib.so;
 	cp $(SRCDS)/bin/libtier0.so libtier0.so;
-	mkdir -p $(BIN_DIR) $(BIN_DIR)/sourcehook
+	mkdir -p $(BIN_DIR) $(BIN_DIR)/sourcehook $(BIN_DIR)/codepatch
 	$(MAKE) -f Makefile extension
 
 l4d1:
