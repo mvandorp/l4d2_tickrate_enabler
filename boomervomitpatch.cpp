@@ -156,6 +156,7 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 			m_patches[i] = new BasicStaticBinPatch<MAX_MOV_INSTR_LEN>(pTarget, instr_buf);
 		}
 	}
+	m_bInitialized = true;
 }
 
 BYTE * BoomerVomitFrameTimePatch::FindCVomitUpdateAbility(void * gamedll)
