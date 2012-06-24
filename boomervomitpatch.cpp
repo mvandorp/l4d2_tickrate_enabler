@@ -4,8 +4,6 @@
 #include "patchexceptions.h"
 
 
-
-
 #define MODRM_SRC_TO_DISP32(modrm) (( modrm & 0x38) | 0x05 )
 
 // Convert mov instruction of any type to mov from immediate address (disp32)
@@ -76,13 +74,50 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
 {
 	// Mark that nothing is patched yet
-	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_bIsReadPatched[i] = false;
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_patches[i] = NULL;
 	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
 	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
 }
 
+BoomerVomitFrameTimePatch::~BoomerVomitFrameTimePatch()
+{
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
+	{
+		if(m_patches[i] != NULL)
+		{
+			delete m_patches[i];
+		}
+	} 
+}
+
 void BoomerVomitFrameTimePatch::Patch()
 {
+	if(!m_bInitialized)
+	{
+		InitializeBinPatches();
+	}
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
+	{
+		m_patches[i]->Patch();
+	}
+}
+
+void BoomerVomitFrameTimePatch::Unpatch() 
+{
+	if(!m_bInitialized)
+	{
+		InitializeBinPatches();
+	}
+	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
+	{
+		m_patches[i]->Unpatch();
+	}
+}
+
+void BoomerVomitFrameTimePatch::InitializeBinPatches()
+{
+	BYTE instr_buf[MAX_MOV_INSTR_LEN];
+
 	if(!m_fpCVomitUpdateAbility)
 	{
 		throw PatchException("Couldn't find CVomit::UpdateAbility() in server memory.");
@@ -90,9 +125,9 @@ void BoomerVomitFrameTimePatch::Patch()
 
 	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
 	{
-		if(!m_bIsReadPatched[i]) // If we've already patched this one, skip.
+		if(m_patches[i] == NULL)
 		{
-			DevMsg("Patching Frametime read %d (offs:0x%x).\n", i, g_FrameTimeReadOffsets[i]);
+			DevMsg("Setting up patch for frametime read %d (offs:0x%x).\n", i, g_FrameTimeReadOffsets[i]);
 
 			// Calculate first offset target
 			BYTE * pTarget = m_fpCVomitUpdateAbility + g_FrameTimeReadOffsets[i];
@@ -105,10 +140,10 @@ void BoomerVomitFrameTimePatch::Patch()
 				throw PatchException("CVomit::UpdateAbility() Patch Offset incorrect.");
 			}
 
-			g_MemUtils.SetMemPatchable(pTarget, 4+offs);
+			memcpy(instr_buf, pTarget, offs+4);
 	
 			// make this instruction read from an immediate address
-			mov_to_disp32(pTarget);
+			mov_to_disp32(instr_buf);
 
 			// Plug in our super cool immediate address.
 #if defined (_WIN32)
@@ -116,20 +151,9 @@ void BoomerVomitFrameTimePatch::Patch()
 #elif defined (_LINUX)
 			*(fakeGlobals ****)(pTarget + offs) = &gpp_FakeGlobals;
 #endif
-			// Mark this one as patched
-			m_bIsReadPatched[i] = true;
-		}
-	}
-}
-
-void BoomerVomitFrameTimePatch::Unpatch() 
-{
-	DevMsg("Totally unpatching!!!!\n");
-	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
-	{
-		if(m_bIsReadPatched[i])
-		{
-			// TODO: unpatch here
+			
+			// Generate BasicBinPatch
+			m_patches[i] = new BasicStaticBinPatch<MAX_MOV_INSTR_LEN>(pTarget, instr_buf);
 		}
 	}
 }
