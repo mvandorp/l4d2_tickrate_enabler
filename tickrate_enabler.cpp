@@ -15,6 +15,13 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define VERSION_L4D "0.5"
+#define VERSION_L4D2 "0.5"
+#if defined (L4D1)
+#define VERSION VERSION_L4D
+#elif defined (L4D2)
+#define VERSION VERSION_L4D2
+#endif
 
 //
 L4DTickRate g_L4DTickRatePlugin;
@@ -125,7 +132,7 @@ void L4DTickRate::UnPause( void )
 //---------------------------------------------------------------------------------
 const char *L4DTickRate::GetPluginDescription( void )
 {
-	return "Tickrate_Enabler 0.4, ProdigySim";
+	return "Tickrate_Enabler " VERSION ", ProdigySim";
 }
 
 //---------------------------------------------------------------------------------
