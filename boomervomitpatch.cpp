@@ -77,23 +77,17 @@ BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
 {
 	// Mark that nothing is patched yet
 	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_bIsReadPatched[i] = false;
-
-	// Find CVomit::UpdateAbility() in memory
 	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
-	
-	// Let's die now if we can't find it
+	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
+}
+
+void BoomerVomitFrameTimePatch::Patch()
+{
 	if(!m_fpCVomitUpdateAbility)
 	{
 		throw PatchException("Couldn't find CVomit::UpdateAbility() in server memory.");
 	}
 
-	// Thanks friend for great message
-	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
-
-}
-
-void BoomerVomitFrameTimePatch::Patch()
-{
 	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
 	{
 		if(!m_bIsReadPatched[i]) // If we've already patched this one, skip.
@@ -142,6 +136,7 @@ void BoomerVomitFrameTimePatch::Unpatch()
 
 BYTE * BoomerVomitFrameTimePatch::FindCVomitUpdateAbility(void * gamedll)
 {
+	if(m_fpCVomitUpdateAbility) return m_fpCVomitUpdateAbility;
 #if defined (_LINUX)
 	return (BYTE *)SimpleResolve(gamedll, LIN_CVomit_UpdateAbility_SYMBOL);
 #elif defined (_WIN32)
