@@ -147,9 +147,9 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 
 			// Plug in our super cool immediate address.
 #if defined (_WIN32)
-			*(fakeGlobals ***)(pTarget + offs) = &gp_FakeGlobals;
+			*(fakeGlobals ***)((instr_buf + offs) = &gp_FakeGlobals;
 #elif defined (_LINUX)
-			*(fakeGlobals ****)(pTarget + offs) = &gpp_FakeGlobals;
+			*(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
 #endif
 			
 			// Generate BasicBinPatch
