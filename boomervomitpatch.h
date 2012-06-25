@@ -3,6 +3,7 @@
 
 #include "eiface.h"
 #include "codepatch/icodepatch.h"
+#include "codepatch/patchmanager.h"
 #include "basicbinpatch.h"
 
 /* Platform specific offset+sig data */
@@ -50,7 +51,7 @@ private:
 	BYTE * m_fpCVomitUpdateAbility;
 	bool m_bInitialized;
 	bool m_bIsReadPatched[NUM_FRAMETIME_READS];
-	BasicStaticBinPatch<MAX_MOV_INSTR_LEN> * m_patches[NUM_FRAMETIME_READS];
+	PatchManager m_patches;
 };
 
 // Deprecated

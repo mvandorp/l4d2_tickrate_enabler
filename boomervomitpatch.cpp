@@ -73,21 +73,13 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 
 BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_fpCVomitUpdateAbility(NULL), m_bInitialized(false)
 {
-	// Mark that nothing is patched yet
-	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_patches[i] = NULL;
 	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
 	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
 }
 
 BoomerVomitFrameTimePatch::~BoomerVomitFrameTimePatch()
 {
-	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
-	{
-		if(m_patches[i] != NULL)
-		{
-			delete m_patches[i];
-		}
-	} 
+	m_patches.UnregisterAll();
 }
 
 void BoomerVomitFrameTimePatch::Patch()
@@ -96,10 +88,7 @@ void BoomerVomitFrameTimePatch::Patch()
 	{
 		InitializeBinPatches();
 	}
-	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
-	{
-		m_patches[i]->Patch();
-	}
+	m_patches.PatchAll();
 }
 
 void BoomerVomitFrameTimePatch::Unpatch() 
@@ -108,10 +97,7 @@ void BoomerVomitFrameTimePatch::Unpatch()
 	{
 		InitializeBinPatches();
 	}
-	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
-	{
-		m_patches[i]->Unpatch();
-	}
+	m_patches.UnpatchAll();
 }
 
 void BoomerVomitFrameTimePatch::InitializeBinPatches()
@@ -125,36 +111,33 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 
 	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++)
 	{
-		if(m_patches[i] == NULL)
+		DevMsg("Setting up patch for frametime read %d (offs:0x%x).\n", i, g_FrameTimeReadOffsets[i]);
+
+		// Calculate first offset target
+		BYTE * pTarget = m_fpCVomitUpdateAbility + g_FrameTimeReadOffsets[i];
+
+		int offs = mov_src_operand_offset(pTarget); // Find offset of disp32 in this particular mov instruction
+		if(offs == 0)
 		{
-			DevMsg("Setting up patch for frametime read %d (offs:0x%x).\n", i, g_FrameTimeReadOffsets[i]);
-
-			// Calculate first offset target
-			BYTE * pTarget = m_fpCVomitUpdateAbility + g_FrameTimeReadOffsets[i];
-
-			int offs = mov_src_operand_offset(pTarget); // Find offset of disp32 in this particular mov instruction
-			if(offs == 0)
-			{
-				// Throw an exception if we can't identify this offset (unexpected instruction!)
-				// TODO: More useful exception here.
-				throw PatchException("CVomit::UpdateAbility() Patch Offset incorrect.");
-			}
-
-			memcpy(instr_buf, pTarget, MAX_MOV_INSTR_LEN);
-	
-			// make this instruction read from an immediate address
-			mov_to_disp32(instr_buf);
-
-			// Plug in our super cool immediate address.
-#if defined (_WIN32)
-			*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
-#elif defined (_LINUX)
-			*(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
-#endif
-			
-			// Generate BasicBinPatch
-			m_patches[i] = new BasicStaticBinPatch<MAX_MOV_INSTR_LEN>(pTarget, instr_buf);
+			// Throw an exception if we can't identify this offset (unexpected instruction!)
+			// TODO: More useful exception here.
+			throw PatchException("CVomit::UpdateAbility() Patch Offset incorrect.");
 		}
+
+		memcpy(instr_buf, pTarget, MAX_MOV_INSTR_LEN);
+
+		// make this instruction read from an immediate address
+		mov_to_disp32(instr_buf);
+
+		// Plug in our super cool immediate address.
+#if defined (_WIN32)
+		*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
+#elif defined (_LINUX)
+		*(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
+#endif
+		
+		// Generate BasicBinPatch
+		m_patches.Register(new BasicStaticBinPatch<MAX_MOV_INSTR_LEN>(pTarget, instr_buf));
 	}
 	m_bInitialized = true;
 }
