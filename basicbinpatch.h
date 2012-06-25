@@ -78,6 +78,7 @@ public:
 			memcpy(m_pOriginal, m_pTarget, m_length);
 		}
 		memcpy(m_pTarget, m_pReplacement, m_length);
+		m_bPatched = true;
 	}
 
 	void Unpatch()
@@ -109,7 +110,7 @@ public:
 	: m_pTarget(target), m_bFirstTime(true), m_bPatchTimeCopy(patchTimeCopy), m_bPatched(false)
 	{
 		memcpy(m_replacement, replacement, LENGTH);
-		if(patchTimeCopy)
+		if(!patchTimeCopy)
 		{
 			memcpy(m_original, target, LENGTH);
 		}
@@ -129,6 +130,7 @@ public:
 			memcpy(m_original, m_pTarget, LENGTH);
 		}
 		memcpy(m_pTarget, m_replacement, LENGTH);
+		m_bPatched = true;
 	}
 
 	void Unpatch()

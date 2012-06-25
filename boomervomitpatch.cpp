@@ -71,7 +71,7 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 }
 #endif
 
-BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
+BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_bInitialized(false), m_fpCVomitUpdateAbility(NULL)
 {
 	// Mark that nothing is patched yet
 	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_patches[i] = NULL;
@@ -140,14 +140,14 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 				throw PatchException("CVomit::UpdateAbility() Patch Offset incorrect.");
 			}
 
-			memcpy(instr_buf, pTarget, offs+4);
+			memcpy(instr_buf, pTarget, MAX_MOV_INSTR_LEN);
 	
 			// make this instruction read from an immediate address
 			mov_to_disp32(instr_buf);
 
 			// Plug in our super cool immediate address.
 #if defined (_WIN32)
-			*(fakeGlobals ***)((instr_buf + offs) = &gp_FakeGlobals;
+			*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
 #elif defined (_LINUX)
 			*(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
 #endif
