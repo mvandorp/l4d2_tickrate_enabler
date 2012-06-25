@@ -102,6 +102,7 @@
       <Filter>codepatch</Filter>
     </ClInclude>
     <ClInclude Include="..\patchexceptions.h" />
+    <ClInclude Include="..\basicbinpatch.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sourcehook">

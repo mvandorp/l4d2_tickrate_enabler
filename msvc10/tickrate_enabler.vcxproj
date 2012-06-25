@@ -225,6 +225,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\basicbinpatch.h" />
     <ClInclude Include="..\boomervomitpatch.h" />
     <ClInclude Include="..\codepatch\autopatch.h" />
     <ClInclude Include="..\codepatch\icodepatch.h" />
