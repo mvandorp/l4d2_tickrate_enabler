@@ -71,7 +71,7 @@ void * SimpleResolve(void * pBaseAddr, const char * symbol)
 }
 #endif
 
-BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_bInitialized(false), m_fpCVomitUpdateAbility(NULL)
+BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_fpCVomitUpdateAbility(NULL), m_bInitialized(false)
 {
 	// Mark that nothing is patched yet
 	for(size_t i = 0; i < NUM_FRAMETIME_READS; i++) m_patches[i] = NULL;
