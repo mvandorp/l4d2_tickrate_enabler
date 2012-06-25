@@ -103,6 +103,7 @@
     </ClInclude>
     <ClInclude Include="..\patchexceptions.h" />
     <ClInclude Include="..\basicbinpatch.h" />
+    <ClInclude Include="..\misc_asm.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sourcehook">

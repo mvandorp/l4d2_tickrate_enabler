@@ -33,40 +33,6 @@
 #include "boomervomitpatch.h"
 #include "patchexceptions.h"
 
-
-#define MODRM_SRC_TO_DISP32(modrm) (( modrm & 0x38) | 0x05 )
-
-// Convert mov instruction of any type to mov from immediate address (disp32)
-// @param instr: pointer to first byte of mov instruction
-// @return true if instruction is now disp32 source
-inline bool mov_to_disp32(BYTE * instr)
-{
-	switch(instr[0])
-	{
-	case 0x8B: // standard mov with modrm
-		instr[1] = MODRM_SRC_TO_DISP32(instr[1]);
-		return true;
-	case 0xA1: // direct to eax mov
-		return true;
-	default: // unsupported or not mov
-		return false;
-	}
-}
-
-// offset of src operand in mov instruction
-inline int mov_src_operand_offset(BYTE * instr)
-{
-	switch(instr[0])
-	{
-	case 0x8B:
-		return 2;
-	case 0xA1:
-		return 1;
-	default: 
-		return 0;
-	}
-}
-
 struct fakeGlobals {
 	float padding[4];
 	float frametime;

@@ -230,6 +230,7 @@
     <ClInclude Include="..\codepatch\autopatch.h" />
     <ClInclude Include="..\codepatch\icodepatch.h" />
     <ClInclude Include="..\codepatch\patchmanager.h" />
+    <ClInclude Include="..\misc_asm.h" />
     <ClInclude Include="..\patchexceptions.h" />
     <ClInclude Include="..\memutils.h" />
     <ClInclude Include="..\sourcehook\FastDelegate.h" />

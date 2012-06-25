@@ -35,6 +35,7 @@
 #include "codepatch/icodepatch.h"
 #include "codepatch/patchmanager.h"
 #include "basicbinpatch.h"
+#include "misc_asm.h"
 
 /* Platform specific offset+sig data */
 
@@ -46,9 +47,6 @@
 // 81 EC ? ? ? ? 53 55 56 57 8B F9 8B 87
 #define WIN_CVomit_UpdateAbility_SIG "\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x8B\xF9\x8B\x87"
 #define WIN_CVomit_UpdateAbility_SIGLEN 14
-
-// 6 is as big as I recognize...
-#define MAX_MOV_INSTR_LEN 6
 
 
 /* gpGlobals read offsets into CVomit::UpdateAbility() */
