@@ -449,13 +449,11 @@ void * MemoryUtils::SimpleResolve(void * pBaseAddr, const char * symbol)
         	dlclose(handle);
         	return pLocation;
         } else {
-			Warning("Nohandle!\n");
 			return NULL;
 		}
 	}
 	else
 	{
-		Warning("No DLINFO!\n");
 		return NULL;
 	}
 #endif
