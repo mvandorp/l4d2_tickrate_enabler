@@ -441,14 +441,14 @@ void * MemoryUtils::SimpleResolve(void * pBaseAddr, const char * symbol)
 #if defined PLATFORM_LINUX
 	Dl_info info;
 	if (dladdr(pBaseAddr, &info) != 0)
-    {
-    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
-        if (handle)
-        {
+\t{
+\t	void *handle = dlopen(info.dli_fname, RTLD_NOW);
+\t\tif (handle)
+\t\t{
 			void * pLocation = ResolveSymbol(handle, symbol);
-        	dlclose(handle);
-        	return pLocation;
-        } else {
+\t\t	dlclose(handle);
+\t\t	return pLocation;
+\t\t} else {
 			return NULL;
 		}
 	}
@@ -572,7 +572,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 		{
 			/* From glibc, elf/dl-load.c:
 			 * c->mapend = ((ph->p_vaddr + ph->p_filesz + GLRO(dl_pagesize) - 1) 
-			 *             & ~(GLRO(dl_pagesize) - 1));
+			 *\t\t\t & ~(GLRO(dl_pagesize) - 1));
 			 *
 			 * In glibc, the segment file size is aligned up to the nearest page size and
 			 * added to the virtual address of the segment. We just want the size here.
@@ -645,20 +645,20 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 void MemoryUtils::ProtectMemory(void *pAddr, int nLength, int nProt)
 {
 #if defined _LINUX
-    void *pAddr2 = (void *)ALIGN(pAddr);
-    mprotect(pAddr2, sysconf(_SC_PAGESIZE), nProt);
+\tvoid *pAddr2 = (void *)ALIGN(pAddr);
+\tmprotect(pAddr2, sysconf(_SC_PAGESIZE), nProt);
 #elif defined _WIN32
-    DWORD old_prot;
-    VirtualProtect(pAddr, nLength, nProt, &old_prot);
+\tDWORD old_prot;
+\tVirtualProtect(pAddr, nLength, nProt, &old_prot);
 #endif
 
-    return;
+\treturn;
 }
 
 void MemoryUtils::SetMemPatchable(void *pAddr, size_t nSize)
 {
-    ProtectMemory(pAddr, (int)nSize, PAGE_EXECUTE_READWRITE);
+\tProtectMemory(pAddr, (int)nSize, PAGE_EXECUTE_READWRITE);
 
-    return;
+\treturn;
 }
 

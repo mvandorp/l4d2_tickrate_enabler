@@ -68,10 +68,10 @@ public:
 	void *FindPattern(const void *start, const void *end, const char *pattern, size_t len);
 	void *ResolveSymbol(void *handle, const char *symbol);
 	void * SimpleResolve(void * pBaseAddr, const char * symbol);
-    // Sets protection on the memory
-    void ProtectMemory(void *pAddr, int nLength, int nProt);
-    // Allows the memory to be written to
-    void SetMemPatchable(void *pAddr, size_t nSize);
+	// Sets protection on the memory
+	void ProtectMemory(void *pAddr, int nLength, int nProt);
+	// Allows the memory to be written to
+	void SetMemPatchable(void *pAddr, size_t nSize);
 
 public:
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);

@@ -44,7 +44,7 @@ public:
 	virtual void			Unload( void );
 	virtual void			Pause( void );
 	virtual void			UnPause( void );
-	virtual const char     *GetPluginDescription( void );      
+	virtual const char *	GetPluginDescription( void );      
 	virtual void			LevelInit( char const *pMapName );
 	virtual void			ServerActivate( edict_t *pEdictList, int edictCount, int clientMax );
 	virtual void			GameFrame( bool simulating );
