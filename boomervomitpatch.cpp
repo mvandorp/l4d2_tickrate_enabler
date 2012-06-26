@@ -42,32 +42,9 @@ fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
 #ifdef _LINUX
 fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
-
-void * SimpleResolve(void * pBaseAddr, const char * symbol)
-{
-	Dl_info info;
-	if (dladdr(pBaseAddr, &info) != 0)
-    {
-    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
-        if (handle)
-        {
-			void * pLocation = g_MemUtils.ResolveSymbol(handle, symbol);
-        	dlclose(handle);
-        	return pLocation;
-        } else {
-			Warning("Nohandle!\n");
-			return NULL;
-		}
-	}
-	else
-	{
-		Warning("No DLINFO!\n");
-		return NULL;
-	}
-}
 #endif
 
-BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_fpCVomitUpdateAbility(NULL), m_bInitialized(false)
+BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_bInitialized(false)
 {
 	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
 	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
@@ -140,9 +117,8 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 
 BYTE * BoomerVomitFrameTimePatch::FindCVomitUpdateAbility(void * gamedll)
 {
-	if(m_fpCVomitUpdateAbility) return m_fpCVomitUpdateAbility;
 #if defined (_LINUX)
-	return (BYTE *)SimpleResolve(gamedll, LIN_CVomit_UpdateAbility_SYMBOL);
+	return (BYTE *)g_MemUtils.SimpleResolve(gamedll, LIN_CVomit_UpdateAbility_SYMBOL);
 #elif defined (_WIN32)
 	return (BYTE*)g_MemUtils.FindLibPattern(gamedll, WIN_CVomit_UpdateAbility_SIG, WIN_CVomit_UpdateAbility_SIGLEN);
 #endif

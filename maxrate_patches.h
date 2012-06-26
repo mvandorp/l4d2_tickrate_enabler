@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * Misc ASM
+ * MaxRate Patches
  * Copyright (C) 2012 Michael "ProdigySim" Busby
  * =============================================================================
  *
@@ -28,63 +28,25 @@
  *
  * Version: $Id$
  */
-#ifndef __MISC_ASM_H__
-#define __MISC_ASM_H__
+#ifndef __MAXRATE_PATCHES_H__
+#define __MAXRATE_PATCHES_H__
 
-// tier0 basetypes.h
-#include <basetypes.h>
-
-// 6 is as big as I recognize...
-#define MAX_MOV_INSTR_LEN 6
-#define JMP_8_INSTR_LEN 2
+#include "codepatch/icodepatch.h"
+#include "misc_asm.h"
 
 
-#define JA_8_OPCODE 0x77
-#define JBE_8_OPCODE 0x76
-#define JMP_8_OPCODE 0xEB
-
-#define MODRM_SRC_TO_DISP32(modrm) (( modrm & 0x38) | 0x05 )
-
-const BYTE NOP_1[] = {0x90};
-const BYTE NOP_2[] = {0x66,0x90};
-const BYTE NOP_3[] = {0x0f,0x1f,0x00};
-const BYTE NOP_4[] = {0x0f,0x1f,0x40,0x00};
-const BYTE NOP_5[] = {0x0f,0x1f,0x44,0x00,0x00};
-const BYTE NOP_6[] = {0x66,0x0f,0x1f,0x44,0x00,0x00};
-const BYTE NOP_7[] = {0x0f,0x1f,0x80,0x00,0x00,0x00,0x00};
-const BYTE NOP_8[] = {0x0f,0x1f,0x80,0x00,0x00,0x00,0x00};
-
-
-
-// Convert mov instruction of any type to mov from immediate address (disp32)
-// @param instr: pointer to first byte of mov instruction
-// @return true if instruction is now disp32 source
-inline bool mov_to_disp32(BYTE * instr)
+class NetChanDataRatePatch : public ICodePatch
 {
-	switch(instr[0])
-	{
-	case 0x8B: // standard mov with modrm
-		instr[1] = MODRM_SRC_TO_DISP32(instr[1]);
-		return true;
-	case 0xA1: // direct to eax mov
-		return true;
-	default: // unsupported or not mov
-		return false;
-	}
-}
-
-// offset of src operand in mov instruction
-inline int mov_src_operand_offset(BYTE * instr)
-{
-	switch(instr[0])
-	{
-	case 0x8B:
-		return 2;
-	case 0xA1:
-		return 1;
-	default: 
-		return 0;
-	}
-}
+public:
+	NetChanDataRatePatch(BYTE * engine);
+	~NetChanDataRatePatch();
+	void Patch();
+	void Unpatch();
+private:
+	BYTE * FindCNetChanSetDataRate(BYTE * engine);
+	void InitializePatch();
+	BYTE * m_fpCNetChanSetDataRate;
+	ICodePatch * m_patch;
+};
 
 #endif

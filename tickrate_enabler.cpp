@@ -39,8 +39,10 @@
 #include "codepatch/patchmanager.h"
 
 #include "tickrate_enabler.h"
-#include "boomervomitpatch.h"
 #include "patchexceptions.h"
+
+#include "boomervomitpatch.h"
+#include "maxrate_patches.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -97,6 +99,36 @@ float GetTickInterval()
 }
 
 IServerGameDLL *gamedll = NULL;
+IVEngineServer *engine = NULL;
+
+void * SearchForInterfaceName(CreateInterfaceFn factory, char name[])
+{
+	size_t namelen = strlen(name), cnt = 0;
+	void * pIface;
+	while(cnt < 100)
+	{
+		for(size_t i = namelen-1; i >= namelen-3; i--)
+		{
+			if(name[i] == '9')
+			{
+				name[i]='0';
+			} 
+			else
+			{
+				name[i]++;
+				break;
+			}
+		}
+		pIface = (void*)factory(name,NULL);
+		if(pIface != NULL)
+		{
+			return pIface;
+		}
+		cnt++;
+	}
+	return NULL;
+}
+
 
 //---------------------------------------------------------------------------------
 // Purpose: called when the plugin is loaded, load the interface we need from the engine
@@ -104,16 +136,18 @@ IServerGameDLL *gamedll = NULL;
 bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
 {
 	char aServerGameDLL[] = "ServerGameDLL000";
-	do
-	{
-		aServerGameDLL[15]++;
-		gamedll = (IServerGameDLL*)gameServerFactory(aServerGameDLL,NULL);
-	} while(aServerGameDLL[15] < '9' && !gamedll);
+	gamedll = (IServerGameDLL *)SearchForInterfaceName(gameServerFactory, aServerGameDLL);
 	if(!gamedll)
 	{
-		Warning("Tickrate_Enabler: Failed to get a pointer on ServerGameDLL.\n");
+		Error("Tickrate_Enabler: Failed to get a pointer on ServerGameDLL.\n");
 		return false;
 	}
+
+	char aVEngineServer[] = "VEngineServer000";
+	engine = (IVEngineServer *)SearchForInterfaceName(interfaceFactory, aVEngineServer);
+
+
+
 	Msg("Tickrate_Enabler: Found ServerGameDLL at %s\n", aServerGameDLL);
 
 	SH_ADD_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
@@ -121,6 +155,7 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 	try
 	{
 		m_patchManager.Register(new BoomerVomitFrameTimePatch(gamedll));
+		m_patchManager.Register(new NetChanDataRatePatch((BYTE *)engine));
 		
 		m_patchManager.PatchAll();
 	}

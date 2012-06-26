@@ -435,6 +435,33 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	return NULL;
 }
 
+
+void * MemoryUtils::SimpleResolve(void * pBaseAddr, const char * symbol)
+{
+#if defined PLATFORM_LINUX
+	Dl_info info;
+	if (dladdr(pBaseAddr, &info) != 0)
+    {
+    	void *handle = dlopen(info.dli_fname, RTLD_NOW);
+        if (handle)
+        {
+			void * pLocation = ResolveSymbol(handle, symbol);
+        	dlclose(handle);
+        	return pLocation;
+        } else {
+			Warning("Nohandle!\n");
+			return NULL;
+		}
+	}
+	else
+	{
+		Warning("No DLINFO!\n");
+		return NULL;
+	}
+#endif
+	return NULL;
+}
+
 bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 {
 	uintptr_t baseAddr;

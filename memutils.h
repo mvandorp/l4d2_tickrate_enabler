@@ -67,6 +67,7 @@ public:
 	void *FindLibPattern(const void *libPtr, const char *pattern, size_t len);
 	void *FindPattern(const void *start, const void *end, const char *pattern, size_t len);
 	void *ResolveSymbol(void *handle, const char *symbol);
+	void * SimpleResolve(void * pBaseAddr, const char * symbol);
     // Sets protection on the memory
     void ProtectMemory(void *pAddr, int nLength, int nProt);
     // Allows the memory to be written to

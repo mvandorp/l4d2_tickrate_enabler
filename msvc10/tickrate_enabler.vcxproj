@@ -209,6 +209,7 @@
   <ItemGroup>
     <ClCompile Include="..\boomervomitpatch.cpp" />
     <ClCompile Include="..\codepatch\patchmanager.cpp" />
+    <ClCompile Include="..\maxrate_patches.cpp" />
     <ClCompile Include="..\memutils.cpp">
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead 2|Win32'">ProgramDatabase</DebugInformationFormat>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead|Win32'">ProgramDatabase</DebugInformationFormat>
@@ -230,6 +231,7 @@
     <ClInclude Include="..\codepatch\autopatch.h" />
     <ClInclude Include="..\codepatch\icodepatch.h" />
     <ClInclude Include="..\codepatch\patchmanager.h" />
+    <ClInclude Include="..\maxrate_patches.h" />
     <ClInclude Include="..\misc_asm.h" />
     <ClInclude Include="..\patchexceptions.h" />
     <ClInclude Include="..\memutils.h" />

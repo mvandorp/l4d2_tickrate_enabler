@@ -18,7 +18,8 @@ SH_OBJECTS = sourcehook.cpp sourcehook_impl_chookidman.cpp sourcehook_impl_cprot
 
 CP_OBJECTS = patchmanager.cpp
 
-OBJECTS = boomervomitpatch.cpp tickrate_enabler.cpp memutils.cpp $(addprefix codepatch/,$(CP_OBJECTS)) $(addprefix sourcehook/,$(SH_OBJECTS))
+OBJECTS = maxrate_patches.cpp boomervomitpatch.cpp tickrate_enabler.cpp memutils.cpp \
+	$(addprefix codepatch/,$(CP_OBJECTS)) $(addprefix sourcehook/,$(SH_OBJECTS))
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
