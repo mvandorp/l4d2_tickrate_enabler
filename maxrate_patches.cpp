@@ -143,7 +143,7 @@ ICodePatch * GameClientSetRatePatch::GeneratePatch(BYTE * pCGameClientSetRate)
 	*/
 	BYTE replacement[MOV_R32_R32_INSTR_LEN+sizeof(NOP_9)] = {MOV_R32_RM32_OPCODE, MODRM_REG_EAX_EDX, 0,0,0,0,0,0,0,0,0};
 	memcpy(&replacement[2], NOP_9, sizeof(NOP_9));
-	if(pCGameClientSetRate[0x43] != MOV_R32_IMM32_OPCODE)
+	if(pCGameClientSetRate[0x4E] != MOV_R32_IMM32_OPCODE)
 	{
 		throw PatchException("CGameClient::SetRate jump patch offset incorrect!");
 	}
