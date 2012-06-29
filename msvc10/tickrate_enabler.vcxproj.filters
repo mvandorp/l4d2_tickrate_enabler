@@ -106,6 +106,7 @@
     <ClInclude Include="..\basicbinpatch.h" />
     <ClInclude Include="..\misc_asm.h" />
     <ClInclude Include="..\maxrate_patches.h" />
+    <ClInclude Include="..\convar_sm_l4d.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sourcehook">

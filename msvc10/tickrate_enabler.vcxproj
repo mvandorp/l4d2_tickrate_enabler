@@ -231,6 +231,7 @@
     <ClInclude Include="..\codepatch\autopatch.h" />
     <ClInclude Include="..\codepatch\icodepatch.h" />
     <ClInclude Include="..\codepatch\patchmanager.h" />
+    <ClInclude Include="..\convar_sm_l4d.h" />
     <ClInclude Include="..\maxrate_patches.h" />
     <ClInclude Include="..\misc_asm.h" />
     <ClInclude Include="..\patchexceptions.h" />
