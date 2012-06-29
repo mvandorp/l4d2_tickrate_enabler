@@ -44,8 +44,20 @@ public:
 	void Unpatch();
 private:
 	BYTE * FindCNetChanSetDataRate(BYTE * engine);
-	void InitializePatch();
-	BYTE * m_fpCNetChanSetDataRate;
+	ICodePatch * GeneratePatch(BYTE * pCNetChanSetDataRate);
+	ICodePatch * m_patch;
+};
+
+class GameClientSetRatePatch : public ICodePatch
+{
+public:
+	GameClientSetRatePatch(BYTE * engine);
+	~GameClientSetRatePatch();
+	void Patch();
+	void Unpatch();
+private:
+	BYTE * FindCGameClientSetRate(BYTE * engine);
+	ICodePatch * GeneratePatch(BYTE * pCGameClientSetRate);
 	ICodePatch * m_patch;
 };
 

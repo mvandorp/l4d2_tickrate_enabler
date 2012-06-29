@@ -30,6 +30,7 @@
  */
 #include <cstdlib>
 #include "memutils.h"
+#include "convar_sm_l4d.h"
 #include "tier0/icommandline.h"
 
 #include "sourcehook/sourcehook.h"
@@ -129,6 +130,7 @@ void * SearchForInterfaceName(CreateInterfaceFn factory, char name[])
 	return NULL;
 }
 
+ICvar * g_pCvar = NULL;
 
 //---------------------------------------------------------------------------------
 // Purpose: called when the plugin is loaded, load the interface we need from the engine
@@ -165,6 +167,21 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 		Error("Failed to process all tickrate_enabler patches, bailing out.\n");
 		return false;
 	}
+
+	g_pCvar = reinterpret_cast<ICvar *>(interfaceFactory(CVAR_INTERFACE_VERSION,NULL));
+	if(g_pCvar == NULL)
+	{
+		Error("RecordingHelpers: Failed to get Cvar interface.\n");
+		return false;
+	}
+
+	g_pCvar->FindVar("sv_maxrate")->SetMax(false,0.0);
+	g_pCvar->FindVar("sv_minrate")->SetMax(false,0.0);
+	g_pCvar->FindVar("net_splitpacket_maxrate")->SetMax(false,0.0);
+	// Maybe later
+	//g_pCvar->FindVar("tv_maxrate")->SetMax(false, 0.0); 
+	
+
 	return true;
 }
 
