@@ -190,6 +190,9 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 //---------------------------------------------------------------------------------
 void L4DTickRate::Unload( void )
 {
+	g_pCvar->FindVar("sv_maxrate")->SetMax(true,30000.0);
+	g_pCvar->FindVar("sv_minrate")->SetMax(true,30000.0);
+	g_pCvar->FindVar("net_splitpacket_maxrate")->SetMax(true,30000.0);
 	m_patchManager.UnpatchAll();
 	m_patchManager.UnregisterAll();
 	SH_REMOVE_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
