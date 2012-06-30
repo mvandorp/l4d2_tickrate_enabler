@@ -1,4 +1,4 @@
-tickrate_enabler 1.0 by ProdigySim
+tickrate_enabler 1.1 by ProdigySim
 
 ======================
 Description
@@ -7,6 +7,12 @@ Description
 Enables the "-tickrate" switch to be used from the command line to set the game's tickrate.
 
 Patches Boomer Vomit behavior to fix an issue where vomit range scaled inversely with tickrate.
+
+Removes global upper-limits on the max client data rate (was 30000),
+and removes the (30k) limits on rate control cvars:
+- sv_maxrate
+- sv_minrate
+- net_splitpacket_maxrate
 
 ======================
 Instructions
@@ -20,6 +26,10 @@ Instructions
     sv_maxupdaterate 100
     sv_maxcmdrate 100
     fps_max 150 // higher than 100 recommended, as ticks calculated seems to dip otherwise.
+	sv_maxrate 0 // 0 = unlimited, but you can also set this manually. Default is 30k for 30tick, use math.
+	// Setting higher sv_minrate can be used to force users to use higher data rates.
+	
+	Note that fps_max and sv_maxrate are hidden variables on most scenarios.
 
 5. Done. Enjoy 100 tick L4D2 gameplay.
 
@@ -27,6 +37,10 @@ Instructions
 Changelog / TODO
 ======================
 
+1.1:
+	Patches 2 hard coded max rate limits
+	Removes CVar Max on sv_max/minrate, net_splitpacket_maxrate
+	Some code reorganization
 1.0:
     Patches boomer vomit to behave properly on modified high tickrates
     Code cleaner perhaps
@@ -34,7 +48,8 @@ Changelog / TODO
     -tickrate only pseudo-release
 
 TODO:
-	Max rate patches
+	Investigate other bugs
+	Remove 30K rate limit from HLTV clients.
 
 ======================
 Credits / License
