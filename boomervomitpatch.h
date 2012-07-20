@@ -74,11 +74,8 @@ public:
 	void Patch();
 	void Unpatch();
 private:
-	void InitializeBinPatches();
+	void InitializeBinPatches(IServerGameDLL * gamedll);
 	BYTE * FindCVomitUpdateAbility(void * gamedll);
-	BYTE * m_fpCVomitUpdateAbility;
-	bool m_bInitialized;
-	bool m_bIsReadPatched[NUM_FRAMETIME_READS];
 	PatchManager m_patches;
 };
 

@@ -44,10 +44,9 @@ fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
 fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
 #endif
 
-BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll) : m_bInitialized(false)
+BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
 {
-	m_fpCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
-	DevMsg("CVomitUpdateAbility at 0x%08x\n", m_fpCVomitUpdateAbility);
+	InitializeBinPatches(gamedll);
 }
 
 BoomerVomitFrameTimePatch::~BoomerVomitFrameTimePatch()
@@ -57,27 +56,22 @@ BoomerVomitFrameTimePatch::~BoomerVomitFrameTimePatch()
 
 void BoomerVomitFrameTimePatch::Patch()
 {
-	if(!m_bInitialized)
-	{
-		InitializeBinPatches();
-	}
 	m_patches.PatchAll();
 }
 
 void BoomerVomitFrameTimePatch::Unpatch() 
 {
-	if(!m_bInitialized)
-	{
-		InitializeBinPatches();
-	}
 	m_patches.UnpatchAll();
 }
 
-void BoomerVomitFrameTimePatch::InitializeBinPatches()
+void BoomerVomitFrameTimePatch::InitializeBinPatches(IServerGameDLL * gamedll)
 {
 	BYTE instr_buf[MAX_MOV_INSTR_LEN];
 
-	if(!m_fpCVomitUpdateAbility)
+	BYTE * pCVomitUpdateAbility = FindCVomitUpdateAbility(static_cast<void *>(gamedll));
+	DevMsg("CVomitUpdateAbility at 0x%08x\n", pCVomitUpdateAbility);
+
+	if(!pCVomitUpdateAbility)
 	{
 		throw PatchException("Couldn't find CVomit::UpdateAbility() in server memory.");
 	}
@@ -87,7 +81,7 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 		DevMsg("Setting up patch for frametime read %d (offs:0x%x).\n", i, g_FrameTimeReadOffsets[i]);
 
 		// Calculate first offset target
-		BYTE * pTarget = m_fpCVomitUpdateAbility + g_FrameTimeReadOffsets[i];
+		BYTE * pTarget = pCVomitUpdateAbility + g_FrameTimeReadOffsets[i];
 
 		int offs = mov_src_operand_offset(pTarget); // Find offset of disp32 in this particular mov instruction
 		if(offs == 0)
@@ -112,7 +106,6 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches()
 		// Generate BasicBinPatch
 		m_patches.Register(new BasicStaticBinPatch<MAX_MOV_INSTR_LEN>(pTarget, instr_buf));
 	}
-	m_bInitialized = true;
 }
 
 BYTE * BoomerVomitFrameTimePatch::FindCVomitUpdateAbility(void * gamedll)
