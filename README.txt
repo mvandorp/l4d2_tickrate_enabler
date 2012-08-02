@@ -1,4 +1,4 @@
-tickrate_enabler 1.1 by ProdigySim
+tickrate_enabler 1.2 by ProdigySim
 
 ======================
 Description
@@ -36,6 +36,10 @@ Instructions
 ======================
 Changelog / TODO
 ======================
+
+1.2: thanks to vintik
+	Fixed maxrate patching on Windows (L4D1+2)
+	Added an extra maxrate patch on Linux that probably does nothing.
 
 1.1:
 	Patches 2 hard coded max rate limits
