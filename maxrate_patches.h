@@ -62,3 +62,18 @@ private:
 };
 
 #endif
+
+#if defined (_LINUX)
+class ClampClientRatePatch : public ICodePatch
+{
+public:
+	ClampClientRatePatch(BYTE * engine);
+	~ClampClientRatePatch();
+	void Patch();
+	void Unpatch();
+private:
+	BYTE * FindClampClientRate(BYTE * engine);
+	ICodePatch * GeneratePatch(BYTE * pClampClientRate);
+	ICodePatch * m_patch;
+};
+#endif

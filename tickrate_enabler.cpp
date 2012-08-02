@@ -159,6 +159,9 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 		m_patchManager.Register(new BoomerVomitFrameTimePatch(gamedll));
 		m_patchManager.Register(new NetChanDataRatePatch((BYTE *)engine));
 		m_patchManager.Register(new GameClientSetRatePatch((BYTE *)engine));
+#if defined (_LINUX)
+		m_patchManager.Register(new ClampClientRatePatch((BYTE *)engine));
+#endif
 		
 		m_patchManager.PatchAll();
 	}
