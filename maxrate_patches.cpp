@@ -34,6 +34,7 @@
 #include "memutils.h"
 #include "patchexceptions.h"
 #include "basicbinpatch.h"
+#include "sigs.h"
 
 NetChanDataRatePatch::NetChanDataRatePatch(BYTE * engine) : m_patch(NULL)
 {
@@ -58,10 +59,9 @@ void NetChanDataRatePatch::Unpatch()
 BYTE * NetChanDataRatePatch::FindCNetChanSetDataRate(BYTE * engine)
 {
 #if defined (_LINUX)
-	return (BYTE *)g_MemUtils.SimpleResolve(engine, "_ZN8CNetChan11SetDataRateEf");
+	return (BYTE *)g_MemUtils.SimpleResolve(engine, SIG_CNETCHAN_SETDATARATE);
 #elif defined (_WIN32)
-	// F3 0F 10 44 24 04 F3 0F 10 0D ? ? ? ? 0F 2F C1 76 10
-	return (BYTE*)g_MemUtils.FindLibPattern(engine, "\xF3\x0F\x10\x44\x24\x04\xF3\x0F\x10\x0D\x2A\x2A\x2A\x2A\x0F\x2F\xC1\x76\x10", 19);
+	return (BYTE*)g_MemUtils.FindLibPattern(engine, SIG_CNETCHAN_SETDATARATE, SIG_CNETCHAN_SETDATARATE_LEN);
 #endif
 }
 

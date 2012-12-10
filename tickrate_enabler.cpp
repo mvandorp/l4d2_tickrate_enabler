@@ -48,8 +48,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define VERSION_L4D "1.2"
-#define VERSION_L4D2 "1.2"
+#define VERSION_L4D "1.3"
+#define VERSION_L4D2 "1.3"
 #if defined (L4D1)
 #define VERSION VERSION_L4D
 #elif defined (L4D2)
@@ -151,6 +151,7 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 
 
 	Msg("Tickrate_Enabler: Found ServerGameDLL at %s\n", aServerGameDLL);
+	Msg("Tickrate_Enabler: Found VEngineServer at %s\n", aVEngineServer);
 
 	SH_ADD_HOOK(IServerGameDLL, GetTickInterval, gamedll, SH_STATIC(GetTickInterval), false);
 

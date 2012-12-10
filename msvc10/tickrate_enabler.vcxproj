@@ -236,6 +236,7 @@
     <ClInclude Include="..\misc_asm.h" />
     <ClInclude Include="..\patchexceptions.h" />
     <ClInclude Include="..\memutils.h" />
+    <ClInclude Include="..\sigs.h" />
     <ClInclude Include="..\sourcehook\FastDelegate.h" />
     <ClInclude Include="..\sourcehook\sh_list.h" />
     <ClInclude Include="..\sourcehook\sh_memfuncinfo.h" />

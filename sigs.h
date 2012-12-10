@@ -28,30 +28,45 @@
  *
  * Version: $Id$
  */
-#ifndef __BOOMERVOMITPATCH_H__
-#define __BOOMERVOMITPATCH_H__
+#ifndef _SIGS_H_
+#define _SIGS_H_
 
-#include "eiface.h"
-#include "codepatch/icodepatch.h"
-#include "codepatch/patchmanager.h"
-#include "basicbinpatch.h"
-#include "misc_asm.h"
-#include "sigs.h"
+/* Platform specific offset+sig data */
 
-class BoomerVomitFrameTimePatch : public ICodePatch
-{
-public:
-	BoomerVomitFrameTimePatch(IServerGameDLL * gamedll);
-	~BoomerVomitFrameTimePatch();
-	void Patch();
-	void Unpatch();
-private:
-	void InitializeBinPatches(IServerGameDLL * gamedll);
-	BYTE * FindCVomitUpdateAbility(void * gamedll);
-	PatchManager m_patches;
-};
+/* CVomit::UpdateAbility() function finding */
+// Same symbol on both l4d1+2
+#define LIN_CVomit_UpdateAbility_SYMBOL "_ZN6CVomit13UpdateAbilityEv"
+// search for "stopvomit" string in CVomit::StopVomitEffect() + ~0x1A0, xref StopVomitEffect + ~0xE0 (farther than other similar)
+// This sig works for both l4d1+2
+// 81 EC ? ? ? ? 53 55 56 57 8B F9 8B 87
+#define WIN_CVomit_UpdateAbility_SIG "\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x8B\xF9\x8B\x87"
+#define WIN_CVomit_UpdateAbility_SIGLEN 14
 
-// Deprecated
-//bool PatchBoomerVomit(IServerGameDLL * gamedll);
 
+/* gpGlobals read offsets into CVomit::UpdateAbility() */
+const int g_FrameTimeReadOffsets[] =
+#if defined (_LINUX)
+#if defined (L4D1)
+	{0x1DD, 0x38D}; // L4D1 LINUX
+#elif defined (L4D2)
+	{0x158, 0x308}; // L4D2 LINUX
 #endif
+#elif defined (_WIN32)
+#if defined (L4D1)
+	{0x173, 0x2CD, 0x476};
+#elif defined (L4D2)
+	{0x168, 0x2C2, 0x45C};
+#endif
+#endif
+#define NUM_FRAMETIME_READS (sizeof(g_FrameTimeReadOffsets)/sizeof(g_FrameTimeReadOffsets[0]))
+
+
+#ifdef _WIN32
+// F3 0F 10 44 24 04 F3 0F 10 0D ? ? ? ? 0F 2F C1 76 10
+#define SIG_CNETCHAN_SETDATARATE "\xF3\x0F\x10\x44\x24\x04\xF3\x0F\x10\x0D\x2A\x2A\x2A\x2A\x0F\x2F\xC1\x76\x10"
+#define SIG_CNETCHAN_SETDATARATE_LEN 19
+#else
+#define SIG_CNETCHAN_SETDATARATE "_ZN8CNetChan11SetDataRateEf"
+#endif
+
+#endif // _SIGS_H_

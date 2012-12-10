@@ -1,4 +1,4 @@
-tickrate_enabler 1.2 by ProdigySim
+tickrate_enabler 1.3 by ProdigySim
 
 ======================
 Description
@@ -36,6 +36,9 @@ Instructions
 ======================
 Changelog / TODO
 ======================
+
+1.3:
+    Fixed L4D1 CVomit::UpdateAbility linux offsets.
 
 1.2: thanks to vintik
 	Fixed maxrate patching on Windows (L4D1+2)
