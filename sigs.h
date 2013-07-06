@@ -49,7 +49,7 @@ const int g_FrameTimeReadOffsets[] =
 #if defined (L4D1)
 	{0x1DD, 0x38D}; // L4D1 LINUX
 #elif defined (L4D2)
-	{0x158, 0x308}; // L4D2 LINUX
+	{0x12D, 0x5FD}; // L4D2 LINUX
 #endif
 #elif defined (_WIN32)
 #if defined (L4D1)

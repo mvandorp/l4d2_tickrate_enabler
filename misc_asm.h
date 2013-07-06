@@ -40,6 +40,7 @@
 #define MOV_R32_R32_INSTR_LEN 2
 
 #define JA_8_OPCODE 0x77
+#define JB_8_OPCODE 0x72
 #define JBE_8_OPCODE 0x76
 #define JMP_8_OPCODE 0xEB
 

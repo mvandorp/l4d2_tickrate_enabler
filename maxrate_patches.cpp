@@ -77,17 +77,18 @@ ICodePatch * NetChanDataRatePatch::GeneratePatch(BYTE * pCNetChanSetDataRate)
 	const BYTE replacement[JMP_8_INSTR_LEN] = {JMP_8_OPCODE, 0x1B};
 	return new BasicStaticBinPatch<sizeof(replacement)>(pCNetChanSetDataRate+6, replacement);
 #elif defined _LINUX
-	// Change comparison jump at +0x20 to NOP2, removing upper bound check.
-	if(pCNetChanSetDataRate[0x20] != JA_8_OPCODE)
+	// Change comparison jump at +0x18 to unconditional jump, removing upper bound check.
+	if(pCNetChanSetDataRate[0x18] != JB_8_OPCODE)
 	{
 		throw PatchException("CNetChan::SetDataRate jump patch offset incorrect!");
 	}
-	return new BasicStaticBinPatch<sizeof(NOP_2)>(pCNetChanSetDataRate+0x20, NOP_2);
+	const BYTE replacement[] = {JMP_8_OPCODE};
+	return new BasicStaticBinPatch<sizeof(replacement)>(pCNetChanSetDataRate+0x18, replacement);
 #endif
 }
 
 
-
+#if defined _WIN32
 GameClientSetRatePatch::GameClientSetRatePatch(BYTE * engine) : m_patch(NULL)
 {
 	m_patch = GeneratePatch(FindCGameClientSetRate(engine));
@@ -110,12 +111,8 @@ void GameClientSetRatePatch::Unpatch()
 
 BYTE * GameClientSetRatePatch::FindCGameClientSetRate(BYTE * engine)
 {
-#if defined (_LINUX)
-	return (BYTE *)g_MemUtils.SimpleResolve(engine, "_ZN11CGameClient7SetRateEib");
-#elif defined (_WIN32)
 	// A1 ? ? ? ? 8B 40 30 85 C0 7E 0C 8B
 	return (BYTE*)g_MemUtils.FindLibPattern(engine, "\xA1\x2A\x2A\x2A\x2A\x8B\x40\x30\x85\xC0\x7E\x0C\x8B", 13);
-#endif
 }
 
 ICodePatch * GameClientSetRatePatch::GeneratePatch(BYTE * pCGameClientSetRate)
@@ -124,7 +121,6 @@ ICodePatch * GameClientSetRatePatch::GeneratePatch(BYTE * pCGameClientSetRate)
 	{
 		throw PatchException("Unable to find CGameClient::SetRate!");
 	}
-#if defined _WIN32
 	// Offset 0x2F should be cmp eax, 30000; jle +0x06
 	// Change to JMP +0x0B
 	/*
@@ -134,28 +130,10 @@ ICodePatch * GameClientSetRatePatch::GeneratePatch(BYTE * pCGameClientSetRate)
 	*/
 	const BYTE replacement[JMP_8_INSTR_LEN] = {JMP_8_OPCODE, 0x0B};
 	return new BasicStaticBinPatch<sizeof(replacement)>(pCGameClientSetRate+0x2F, replacement);
-#elif defined _LINUX
-	/*
-	+0x4E
-	B8 30 75 00 00 		mov     eax, 7530h
-	81 FA 30 75 00 00	cmp     edx, 7530h
-	0F 4E C2			cmovle  eax, edx
-	*/
-	//BYTE replacement[MOV_R32_R32_INSTR_LEN+sizeof(NOP_9)] = {MOV_R32_RM32_OPCODE, MODRM_REG_EAX_EDX, 0,0,0,0,0,0,0,0,0};
-	//memcpy(&replacement[2], NOP_9, sizeof(NOP_9));
-	//why 9? maybe 12?
-	BYTE replacement[MOV_R32_R32_INSTR_LEN+sizeof(NOP_9)+sizeof(NOP_3)] = {MOV_R32_RM32_OPCODE, MODRM_REG_EAX_EDX, 0,0,0,0,0,0,0,0,0,0,0,0};
-	memcpy(&replacement[2], NOP_9, sizeof(NOP_9));
-	memcpy(&replacement[11], NOP_3, sizeof(NOP_3));
-	if(pCGameClientSetRate[0x4E] != MOV_R32_IMM32_OPCODE)
-	{
-		throw PatchException("CGameClient::SetRate jump patch offset incorrect!");
-	}
-	return new BasicStaticBinPatch<sizeof(replacement)>(pCGameClientSetRate+0x4E, replacement);
-#endif
 }
 
-#if defined (_LINUX)
+#elif defined (_LINUX)
+
 ClampClientRatePatch::ClampClientRatePatch(BYTE * engine) : m_patch(NULL)
 {
 	m_patch = GeneratePatch(FindClampClientRate(engine));
@@ -188,7 +166,7 @@ ICodePatch * ClampClientRatePatch::GeneratePatch(BYTE * pClampClientRate)
 		throw PatchException("Unable to find ClampClientRate!");
 	}
 	/*
-	+0x42
+	+0x38
 	B8 30 75 00 00 		mov     eax, 7530h
 	81 FA 30 75 00 00	cmp     edx, 7530h
 	0F 4E C2			cmovle  eax, edx
@@ -196,10 +174,10 @@ ICodePatch * ClampClientRatePatch::GeneratePatch(BYTE * pClampClientRate)
 	BYTE replacement[MOV_R32_R32_INSTR_LEN+sizeof(NOP_9)+sizeof(NOP_3)] = {MOV_R32_RM32_OPCODE, MODRM_REG_EAX_EDX, 0,0,0,0,0,0,0,0,0,0,0,0};
 	memcpy(&replacement[2], NOP_9, sizeof(NOP_9));
 	memcpy(&replacement[11], NOP_3, sizeof(NOP_3));
-	if(pClampClientRate[0x42] != MOV_R32_IMM32_OPCODE)
+	if(pClampClientRate[0x38] != MOV_R32_IMM32_OPCODE)
 	{
 		throw PatchException("ClampClientRate jump patch offset incorrect!");
 	}
-	return new BasicStaticBinPatch<sizeof(replacement)>(pClampClientRate+0x42, replacement);
+	return new BasicStaticBinPatch<sizeof(replacement)>(pClampClientRate+0x38, replacement);
 }
 #endif
