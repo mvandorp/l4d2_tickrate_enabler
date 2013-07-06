@@ -77,13 +77,12 @@ ICodePatch * NetChanDataRatePatch::GeneratePatch(BYTE * pCNetChanSetDataRate)
 	const BYTE replacement[JMP_8_INSTR_LEN] = {JMP_8_OPCODE, 0x1B};
 	return new BasicStaticBinPatch<sizeof(replacement)>(pCNetChanSetDataRate+6, replacement);
 #elif defined _LINUX
-	// Change comparison jump at +0x18 to unconditional jump, removing upper bound check.
+	// Change comparison jump at +0x18 to NOP2, removing upper bound check.
 	if(pCNetChanSetDataRate[0x18] != JB_8_OPCODE)
 	{
 		throw PatchException("CNetChan::SetDataRate jump patch offset incorrect!");
 	}
-	const BYTE replacement[] = {JMP_8_OPCODE};
-	return new BasicStaticBinPatch<sizeof(replacement)>(pCNetChanSetDataRate+0x18, replacement);
+	return new BasicStaticBinPatch<sizeof(NOP_2)>(pCNetChanSetDataRate+0x18, NOP_2);
 #endif
 }
 
