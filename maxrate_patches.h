@@ -48,6 +48,8 @@ private:
 	ICodePatch * m_patch;
 };
 
+#if defined _WIN32
+
 class GameClientSetRatePatch : public ICodePatch
 {
 public:
@@ -61,9 +63,8 @@ private:
 	ICodePatch * m_patch;
 };
 
-#endif
+#elif defined (_LINUX)
 
-#if defined (_LINUX)
 class ClampClientRatePatch : public ICodePatch
 {
 public:
@@ -76,4 +77,7 @@ private:
 	ICodePatch * GeneratePatch(BYTE * pClampClientRate);
 	ICodePatch * m_patch;
 };
+
+#endif
+
 #endif
