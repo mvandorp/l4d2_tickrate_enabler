@@ -40,6 +40,11 @@ struct fakeGlobals {
 
 fakeGlobals g_FakeGlobals = { {0.0, 0.0, 0.0, 0.0}, 0.033333333};
 fakeGlobals *gp_FakeGlobals = &g_FakeGlobals;
+#ifdef _LINUX
+#if defined (L4D1)
+	fakeGlobals **gpp_FakeGlobals = &gp_FakeGlobals; // olol
+#endif
+#endif
 
 BoomerVomitFrameTimePatch::BoomerVomitFrameTimePatch(IServerGameDLL * gamedll)
 {
@@ -94,7 +99,15 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches(IServerGameDLL * gamedll)
 		mov_to_disp32(instr_buf);
 
 		// Plug in our super cool immediate address.
-		*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
+#if defined (_WIN32)
+                *(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
+#elif defined (_LINUX)
+#if defined (L4D1)
+                *(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
+#elif defined (L4D2)
+				*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
+#endif
+#endif
 		
 		// Generate BasicBinPatch
 		m_patches.Register(new BasicStaticBinPatch<MAX_MOV_INSTR_LEN>(pTarget, instr_buf));
