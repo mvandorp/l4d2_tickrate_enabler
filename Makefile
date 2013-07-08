@@ -36,14 +36,16 @@ ifeq "$(L4D)" "1"
 	HL2LIB = $(HL2SDK_L4D)/lib/linux
 	SRCDS = $(SRCDS_BASE)/l4d
 	CFLAGS += -DL4D1
+	LIBPOSTFIX = 
 else
 	HL2PUB = $(HL2SDK_L4D2)/public
 	HL2LIB = $(HL2SDK_L4D2)/lib/linux
 	SRCDS = $(SRCDS_BASE)/left4dead2
 	CFLAGS += -DL4D2
+	LIBPOSTFIX = _srv
 endif
 
-LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so
+LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib$(LIBPOSTFIX).so libtier0$(LIBPOSTFIX).so
 
 INCLUDE += -I. -I$(HL2PUB) -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1
 
@@ -96,8 +98,8 @@ $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all:
-	cp $(SRCDS)/bin/libvstdlib.so libvstdlib.so;
-	cp $(SRCDS)/bin/libtier0.so libtier0.so;
+	cp $(SRCDS)/bin/libvstdlib$(LIBPOSTFIX).so libvstdlib$(LIBPOSTFIX).so;
+	cp $(SRCDS)/bin/libtier0$(LIBPOSTFIX).so libtier0$(LIBPOSTFIX).so;
 	mkdir -p $(BIN_DIR) $(BIN_DIR)/sourcehook $(BIN_DIR)/codepatch
 	$(MAKE) -f Makefile extension
 

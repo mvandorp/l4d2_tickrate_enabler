@@ -37,10 +37,15 @@
 // Same symbol on both l4d1+2
 #define LIN_CVomit_UpdateAbility_SYMBOL "_ZN6CVomit13UpdateAbilityEv"
 // search for "stopvomit" string in CVomit::StopVomitEffect() + ~0x1A0, xref StopVomitEffect + ~0xE0 (farther than other similar)
-// This sig works for both l4d1+2
-// 81 EC ? ? ? ? 53 55 56 57 8B F9 8B 87
-#define WIN_CVomit_UpdateAbility_SIG "\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x8B\xF9\x8B\x87"
-#define WIN_CVomit_UpdateAbility_SIGLEN 14
+#if defined (L4D1)
+	// 81 EC ? ? ? ? 53 55 56 57 8B F9 8B 87
+	#define WIN_CVomit_UpdateAbility_SIG "\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x8B\xF9\x8B\x87"
+	#define WIN_CVomit_UpdateAbility_SIGLEN 14
+#elif defined (L4D2)
+	// 55 8B EC 81 EC ? ? ? ? A1 ? ? ? ? 33 C5 89 45 FC 53 56 57 8B F9 8B 87 ? ? ? ? 83
+	#define WIN_CVomit_UpdateAbility_SIG "\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x53\x56\x57\x8B\xF9\x8B\x87\x2A\x2A\x2A\x2A\x83"
+	#define WIN_CVomit_UpdateAbility_SIGLEN 31
+#endif
 
 
 /* gpGlobals read offsets into CVomit::UpdateAbility() */
@@ -55,18 +60,96 @@ const int g_FrameTimeReadOffsets[] =
 #if defined (L4D1)
 	{0x173, 0x2CD, 0x476};
 #elif defined (L4D2)
-	{0x168, 0x2C2, 0x45C};
+	{0x1E3, 0x37A, 0x52B};
 #endif
 #endif
 #define NUM_FRAMETIME_READS (sizeof(g_FrameTimeReadOffsets)/sizeof(g_FrameTimeReadOffsets[0]))
 
 
-#ifdef _WIN32
-// F3 0F 10 44 24 04 F3 0F 10 0D ? ? ? ? 0F 2F C1 76 10
-#define SIG_CNETCHAN_SETDATARATE "\xF3\x0F\x10\x44\x24\x04\xF3\x0F\x10\x0D\x2A\x2A\x2A\x2A\x0F\x2F\xC1\x76\x10"
-#define SIG_CNETCHAN_SETDATARATE_LEN 19
-#else
-#define SIG_CNETCHAN_SETDATARATE "_ZN8CNetChan11SetDataRateEf"
+#if defined (_WIN32)
+#if defined (L4D1)
+	// F3 0F 10 44 24 04 F3 0F 10 0D ? ? ? ? 0F 2F C1 76 10
+	#define SIG_CNETCHAN_SETDATARATE "\xF3\x0F\x10\x44\x24\x04\xF3\x0F\x10\x0D\x2A\x2A\x2A\x2A\x0F\x2F\xC1\x76\x10"
+	#define SIG_CNETCHAN_SETDATARATE_LEN 19
+	// Jump from just after first instruction (6 bytes, loads argument float to xmm0)
+	// to the lower-bound comparison instructions
+	//(func+35 bytes, jump offset 35-6-2 = 27 = 0x1B)
+	#define CNETCHAN_PATCH_OFFSET 6
+	// movss
+	#define CNETCHAN_PATCH_CHECK_BYTE 0xF3
+	#define CNETCHAN_PATCH_JUMP_OFFSET 0x1B
+#elif defined (L4D2)
+	// 55 8B EC F3 0F 10 45 08 F3 0F 10 0D ? ? ? ? 0F 2F C1 76
+	#define SIG_CNETCHAN_SETDATARATE "\x55\x8B\xEC\xF3\x0F\x10\x45\x08\xF3\x0F\x10\x0D\x2A\x2A\x2A\x2A\x0F\x2F\xC1\x76"
+	#define SIG_CNETCHAN_SETDATARATE_LEN 20
+	#define CNETCHAN_PATCH_OFFSET 8
+	#define CNETCHAN_PATCH_CHECK_BYTE 0xF3
+	#define CNETCHAN_PATCH_JUMP_OFFSET 0x1C
+#endif
+#elif defined (_LINUX)
+	#define SIG_CNETCHAN_SETDATARATE "_ZN8CNetChan11SetDataRateEf"
+#if defined (L4D1)
+	// Change comparison jump at +0x20 to NOP2, removing upper bound check.
+	#define CNETCHAN_PATCH_OFFSET 0x20
+	#define CNETCHAN_PATCH_CHECK_BYTE JA_8_OPCODE
+#elif defined (L4D2)
+	#define CNETCHAN_PATCH_OFFSET 0x18
+	#define CNETCHAN_PATCH_CHECK_BYTE JB_8_OPCODE
+#endif
+#endif
+
+#if defined (_WIN32)
+#if defined (L4D1)
+	// A1 ? ? ? ? 8B 40 30 85 C0 7E 0C 8B
+	#define SIG_CGAMECLIENT_SETDATARATE "\xA1\x2A\x2A\x2A\x2A\x8B\x40\x30\x85\xC0\x7E\x0C\x8B"
+	#define SIG_CGAMECLIENT_SETDATARATE_LEN 13
+	// Offset 0x2F should be cmp eax, 30000; jle +0x06
+	// Change to JMP +0x0B
+	/*
+	+0x2F
+	3D 30 75 00 00		cmp     eax, 7530h
+	7E 06				jle     short loc_10180DFC
+	*/
+	#define CGAMECLIENT_PATCH_OFFSET 0x2F
+	#define CGAMECLIENT_PATCH_CHECK_BYTE 0x3D
+	#define CGAMECLIENT_PATCH_JUMP_OFFSET 0x0B
+#elif defined (L4D2)
+	//55 8B EC A1 ? ? ? ? 8B 40 30 85 C0 7E 0B
+	#define SIG_CGAMECLIENT_SETDATARATE "\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x8B\x40\x30\x85\xC0\x7E\x0B"
+	#define SIG_CGAMECLIENT_SETDATARATE_LEN 15
+	#define CGAMECLIENT_PATCH_OFFSET 0x30
+	#define CGAMECLIENT_PATCH_CHECK_BYTE 0x3D
+	#define CGAMECLIENT_PATCH_JUMP_OFFSET 0x0C
+#endif
+#elif defined (_LINUX)
+	#define SIG_CGAMECLIENT_SETDATARATE "_ZN11CGameClient7SetRateEib"
+	//only for l4d1
+	/*
+	+0x4E
+	B8 30 75 00 00 		mov     eax, 7530h
+	81 FA 30 75 00 00	cmp     edx, 7530h
+	0F 4E C2			cmovle  eax, edx
+	
+	Filling this with NOPs
+	*/
+	#define CGAMECLIENT_PATCH_OFFSET 0x4E
+	#define CGAMECLIENT_PATCH_CHECK_BYTE MOV_R32_IMM32_OPCODE
+#endif
+
+#if defined (_LINUX)
+	#define SIG_CLAMPCLIENTRATE "_Z15ClampClientRatei"
+	/*
+	+CLAMPCLIENTRATE_PATCH_OFFSET:
+	B8 30 75 00 00 		mov     eax, 7530h
+	81 FA 30 75 00 00	cmp     edx, 7530h
+	0F 4E C2			cmovle  eax, edx
+	*/
+	#define CLAMPCLIENTRATE_PATCH_CHECK_BYTE MOV_R32_IMM32_OPCODE
+#if defined (L4D1)
+	#define CLAMPCLIENTRATE_PATCH_OFFSET 0x42
+#elif defined (L4D2)
+	#define CLAMPCLIENTRATE_PATCH_OFFSET 0x38
+#endif
 #endif
 
 #endif // _SIGS_H_
