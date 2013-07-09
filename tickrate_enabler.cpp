@@ -48,12 +48,15 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define VERSION_L4D "1.3"
-#define VERSION_L4D2 "1.3"
+#ifdef _DEBUG
+#define VDEBUG "-dev"
+#endif
+#define VERSION_L4D "1.4"
+#define VERSION_L4D2 "1.4"
 #if defined (L4D1)
-#define VERSION VERSION_L4D
+#define VERSION VERSION_L4D VDEBUG
 #elif defined (L4D2)
-#define VERSION VERSION_L4D2
+#define VERSION VERSION_L4D2 VDEBUG
 #endif
 
 //
