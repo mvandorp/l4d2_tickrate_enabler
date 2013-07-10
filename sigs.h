@@ -136,7 +136,17 @@ const int g_FrameTimeReadOffsets[] =
 	#define CGAMECLIENT_PATCH_CHECK_BYTE MOV_R32_IMM32_OPCODE
 #endif
 
-#if defined (_LINUX)
+#if defined (_WIN32)
+#if defined (L4D2)
+	//55 8B EC 8B 45 08 53 8B 5D 0C 84 DB 75
+	#define SIG_CLAMPCLIENTRATE "\x55\x8B\xEC\x8B\x45\x08\x53\x8B\x5D\x0C\x84\xDB\x75"
+	#define SIG_CLAMPCLIENTRATE_LEN 13
+	// Jump over the upper bound check
+	#define CLAMPCLIENTRATE_PATCH_CHECK_BYTE 0x3D
+	#define CLAMPCLIENTRATE_PATCH_OFFSET 0x34
+	#define CLAMPCLIENTRATE_PATCH_JUMP_OFFSET 0x16
+#endif
+#elif defined (_LINUX)
 	#define SIG_CLAMPCLIENTRATE "_Z15ClampClientRatei"
 	/*
 	+CLAMPCLIENTRATE_PATCH_OFFSET:

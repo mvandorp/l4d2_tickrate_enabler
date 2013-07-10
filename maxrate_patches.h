@@ -36,6 +36,9 @@
 
 #if defined (_WIN32)
 	#define CGAMECLIENT_PATCH
+#if defined (L4D2)
+	#define CLAMPCLIENTRATE_PATCH
+#endif
 #elif defined (_LINUX)
 //only for l4d1
 #if defined (L4D1)
@@ -71,7 +74,7 @@ private:
 };
 #endif
 
-#if defined (_LINUX)
+#if defined (CLAMPCLIENTRATE_PATCH)
 class ClampClientRatePatch : public ICodePatch
 {
 public:

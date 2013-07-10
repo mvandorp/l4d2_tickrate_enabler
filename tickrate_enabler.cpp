@@ -165,7 +165,7 @@ bool L4DTickRate::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn ga
 #if defined (CGAMECLIENT_PATCH)
 		m_patchManager.Register(new GameClientSetRatePatch((BYTE *)engine));
 #endif
-#if defined (_LINUX)
+#if defined (CLAMPCLIENTRATE_PATCH)
 		m_patchManager.Register(new ClampClientRatePatch((BYTE *)engine));
 #endif
 		

@@ -100,12 +100,12 @@ void BoomerVomitFrameTimePatch::InitializeBinPatches(IServerGameDLL * gamedll)
 
 		// Plug in our super cool immediate address.
 #if defined (_WIN32)
-                *(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
+		*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
 #elif defined (_LINUX)
 #if defined (L4D1)
-                *(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
+		*(fakeGlobals ****)(instr_buf + offs) = &gpp_FakeGlobals;
 #elif defined (L4D2)
-				*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
+		*(fakeGlobals ***)(instr_buf + offs) = &gp_FakeGlobals;
 #endif
 #endif
 		
