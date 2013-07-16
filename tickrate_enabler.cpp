@@ -48,6 +48,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define VDEBUG ""
 #ifdef _DEBUG
 #define VDEBUG "-dev"
 #endif
