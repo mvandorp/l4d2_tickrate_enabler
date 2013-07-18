@@ -40,7 +40,7 @@
 	#define CLAMPCLIENTRATE_PATCH
 #endif
 #elif defined (_LINUX)
-//only for l4d1
+	#define CLAMPCLIENTRATE_PATCH
 #if defined (L4D1)
 	#define CGAMECLIENT_PATCH
 #endif
