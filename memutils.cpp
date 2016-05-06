@@ -28,6 +28,8 @@
  */
 
 #include "memutils.h"
+#include <sourcehook/sourcehook.h>
+#include <sourcehook/sh_memory.h>
 #include <string.h>
 
 #ifdef PLATFORM_LINUX
@@ -644,20 +646,12 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 void MemoryUtils::ProtectMemory(void *pAddr, int nLength, int nProt)
 {
-#if defined _LINUX
-	void *pAddr2 = (void *)ALIGN(pAddr);
-	mprotect(pAddr2, sysconf(_SC_PAGESIZE), nProt);
-#elif defined _WIN32
-	DWORD old_prot;
-	VirtualProtect(pAddr, nLength, nProt, &old_prot);
-#endif
-
-	return;
+	SourceHook::SetMemAccess(pAddr, nLength, nProt);
 }
 
 void MemoryUtils::SetMemPatchable(void *pAddr, size_t nSize)
 {
-	ProtectMemory(pAddr, (int)nSize, PAGE_EXECUTE_READWRITE);
+	ProtectMemory(pAddr, (int)nSize, SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
 
 	return;
 }
